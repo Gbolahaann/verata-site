@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Verata — True data</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='32'%20height='32'%3E%3Ctext%20x='3'%20y='25'%20font-family='ui-monospace,Menlo,monospace'%20font-size='26'%20font-weight='500'%20fill='%2317151C'%3Ev%3C/text%3E%3Crect%20x='21'%20y='19'%20width='6'%20height='6'%20fill='%2346237A'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Instrument+Sans:ital,wght@0,400..700;1,400..700&family=Geist+Mono:wght@400..600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --purple: #46237A;
+  --purple-deep: #2B1650;
+  --purple-ink: #1D1133;
+  --violet: #6D28D9;
+  --violet-bright: #8B5CF6;
+  --lilac: #C4B5FD;
+  --lav-1: #F8F6FC;
+  --lav-2: #EFE9F9;
+  --ink: #17151C;
+  --body: #57534E;
+  --muted: #79716B;
+  --faint: #A8A29E;
+  --line: #ECECE8;
+  --line-purple: #ECECE8;
+  --green: #0E8A5F;
+  --green-bright: #34D399;
+  --amber: #D97706;
+  --amber-bright: #F59E0B;
+  --paper: #FFFFFF;
+  --serif: 'Spectral', Georgia, serif;
+  --sans: 'Instrument Sans', Helvetica, Arial, sans-serif;
+  --mono: 'Geist Mono', ui-monospace, monospace;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  font-family: var(--sans);
+  color: var(--ink);
+  background: #FDFCFB;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+a { color: inherit; }
+::selection { background: var(--purple); color: #fff; }
+img, svg { max-width: 100%; }
+
+/* ---------- shared ---------- */
+.wrap { max-width: 1160px; margin: 0 auto; padding-left: clamp(20px, 5vw, 44px); padding-right: clamp(20px, 5vw, 44px); }
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 11px; font-weight: 500; letter-spacing: 0.16em;
+  color: var(--violet);
+  display: inline-flex; align-items: center; gap: 10px;
+  margin-bottom: 22px;
+}
+.eyebrow::before {
+  content: ""; width: 22px; height: 2px; border-radius: 2px;
+  background: linear-gradient(90deg, var(--violet), var(--lilac));
+}
+.eyebrow.on-dark { color: var(--lilac); }
+h2.section-title {
+  font-family: var(--serif); font-weight: 500;
+  font-size: clamp(28px, 4.2vw, 40px);
+  line-height: 1.14; letter-spacing: -0.01em; margin: 0 0 16px;
+  text-wrap: balance;
+}
+.section-sub { font-size: clamp(15px, 1.6vw, 16.5px); line-height: 1.6; color: var(--body); max-width: 540px; margin: 0; text-wrap: pretty; }
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  font-size: 15px; font-weight: 500; text-decoration: none; color: #fff;
+  background: linear-gradient(135deg, var(--violet) 0%, var(--purple) 55%, var(--purple-deep) 100%);
+  background-size: 160% 160%; background-position: 0% 0%;
+  padding: 13px 24px; border-radius: 8px;
+  box-shadow: 0 12px 28px -12px rgba(70,35,122,0.55);
+  transition: background-position 0.4s ease, transform 0.25s ease, box-shadow 0.25s ease;
+}
+.btn:hover { background-position: 100% 100%; transform: translateY(-2px); box-shadow: 0 18px 34px -12px rgba(70,35,122,0.6); }
+.btn.ghost {
+  background: transparent; color: var(--ink); box-shadow: none;
+  border: 1px solid var(--line-purple);
+  transition: border-color 0.25s, color 0.25s, background 0.25s, transform 0.25s;
+}
+.btn.ghost:hover { border-color: var(--violet); color: var(--violet); background: var(--lav-1); transform: translateY(-2px); }
+.textlink { font-size: 15px; font-weight: 500; color: var(--purple); text-decoration: none; transition: color 0.2s, gap 0.25s; display: inline-flex; gap: 7px; align-items: center; }
+.textlink:hover { color: var(--violet); }
+.textlink .arr { transition: transform 0.25s ease; }
+.textlink:hover .arr { transform: translateX(4px); }
+
+/* ---------- reveal animation ---------- */
+.reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.9s cubic-bezier(0.22,1,0.36,1), transform 0.9s cubic-bezier(0.22,1,0.36,1); }
+.reveal.in { opacity: 1; transform: translateY(0); }
+
+/* ---------- keyframes ---------- */
+@keyframes vFloat  { from { transform: rotate(-1.4deg) translateY(0); } to { transform: rotate(-1.4deg) translateY(-11px); } }
+@keyframes vFloatB { from { transform: translateY(0) rotate(1.5deg); } to { transform: translateY(-9px) rotate(1.5deg); } }
+@keyframes vFloatC { from { transform: translateY(0) rotate(-2deg); } to { transform: translateY(-7px) rotate(-2deg); } }
+@keyframes vDrift  { from { transform: translate(0,0) scale(1); } to { transform: translate(-40px, 26px) scale(1.06); } }
+@keyframes vMarquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@keyframes vPulse  { 0% { transform: scale(1); opacity: 0.55; } 100% { transform: scale(1.9); opacity: 0; } }
+@keyframes vDash   { to { stroke-dashoffset: -20; } }
+@keyframes vShimmer { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+
+/* ---------- logo (per LOGO-SPEC: "The Ledger") ---------- */
+.verata-logo {
+  font-family: var(--mono);
+  font-weight: 500;
+  letter-spacing: -0.06em;
+  color: var(--ink);
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.verata-logo i {
+  display: inline-block;
+  width: 0.16em; height: 0.16em;
+  background: var(--purple);
+  margin-left: 0.14em;
+}
+.verata-logo.on-dark { color: #FAFAF9; }
+.verata-logo.on-dark i { background: #A78BFA; }
+
+/* ---------- nav ---------- */
+nav.site {
+  position: sticky; top: 0; z-index: 60;
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line-purple);
+  transition: background 0.35s ease, border-color 0.35s ease;
+}
+.nav-inner {
+  height: 64px; display: flex; align-items: center; gap: 36px;
+  border: 1px solid transparent; border-radius: 999px; background: transparent;
+  transition: max-width 0.4s cubic-bezier(0.22,1,0.36,1), height 0.4s cubic-bezier(0.22,1,0.36,1),
+    margin 0.4s cubic-bezier(0.22,1,0.36,1), padding 0.4s cubic-bezier(0.22,1,0.36,1),
+    background 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
+}
+/* Quartr-style floating pill once the page scrolls */
+nav.site.float { background: transparent; border-bottom-color: transparent; backdrop-filter: none; -webkit-backdrop-filter: none; }
+nav.site.float .nav-inner {
+  max-width: 880px; height: 54px; margin-top: 10px;
+  padding-left: 24px; padding-right: 10px;
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border-color: var(--line);
+  box-shadow: 0 16px 40px -16px rgba(23,21,28,0.22);
+}
+.brand { display: flex; align-items: center; text-decoration: none; }
+.brand .verata-logo { font-size: 21px; }
+.nav-links { display: flex; gap: 26px; flex: 1; }
+.nav-links a {
+  font-size: 14px; text-decoration: none; color: var(--body); position: relative; padding: 4px 0;
+  transition: color 0.2s;
+}
+.nav-links a::after {
+  content: ""; position: absolute; left: 0; bottom: 0; height: 2px; width: 0;
+  border-radius: 2px; background: linear-gradient(90deg, var(--violet), var(--lilac));
+  transition: width 0.3s cubic-bezier(0.22,1,0.36,1);
+}
+.nav-links a:hover { color: var(--purple); }
+.nav-links a:hover::after { width: 100%; }
+.nav-cta { display: flex; align-items: center; gap: 20px; }
+.nav-cta .signin { font-size: 14px; font-weight: 500; text-decoration: none; color: var(--ink); transition: color 0.2s; }
+.nav-cta .signin:hover { color: var(--violet); }
+.nav-cta .btn { padding: 9px 16px; font-size: 14px; border-radius: 7px; }
+.menu-btn { display: none; margin-left: auto; background: none; border: 1px solid var(--line-purple); border-radius: 8px; padding: 8px 10px; cursor: pointer; }
+.menu-btn svg { display: block; }
+.mobile-panel {
+  display: none; flex-direction: column; gap: 4px;
+  padding: 10px clamp(20px,5vw,44px) 20px; border-top: 1px solid var(--line-purple);
+  background: rgba(255,255,255,0.98);
+}
+.mobile-panel a { text-decoration: none; color: var(--ink); font-size: 16px; padding: 12px 4px; border-bottom: 1px solid var(--line); }
+.mobile-panel a:last-child { border-bottom: none; }
+.mobile-panel .btn { margin-top: 10px; justify-content: center; }
+nav.site.open .mobile-panel { display: flex; }
+
+/* ---------- hero ---------- */
+header.hero {
+  position: relative; overflow: hidden;
+  background:
+    radial-gradient(900px 540px at 78% 18%, rgba(139,92,246,0.08), transparent 68%),
+    radial-gradient(700px 480px at 8% 92%, rgba(70,35,122,0.05), transparent 70%),
+    #FDFCFB;
+}
+.hero-grid-lines {
+  position: absolute; inset: 0; pointer-events: none;
+  background-image: linear-gradient(rgba(70,35,122,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(70,35,122,0.05) 1px, transparent 1px);
+  background-size: 36px 36px;
+  -webkit-mask-image: radial-gradient(860px 520px at 66% 38%, black, transparent 76%);
+  mask-image: radial-gradient(860px 520px at 66% 38%, black, transparent 76%);
+}
+.hero-blob { position: absolute; border-radius: 999px; pointer-events: none; filter: blur(56px); }
+.hero-blob.a { width: 620px; height: 460px; right: -120px; top: -90px; background: radial-gradient(closest-side, rgba(139,92,246,0.12), transparent 72%); animation: vDrift 14s ease-in-out infinite alternate; }
+.hero-blob.b { width: 520px; height: 400px; left: -150px; bottom: -130px; background: radial-gradient(closest-side, rgba(70,35,122,0.08), transparent 72%); animation: vDrift 19s ease-in-out infinite alternate-reverse; }
+.hero-inner {
+  position: relative; z-index: 1;
+  display: grid; grid-template-columns: 1.08fr 0.92fr; gap: clamp(40px, 6vw, 72px);
+  align-items: center;
+  padding-top: clamp(56px, 9vw, 96px); padding-bottom: clamp(64px, 10vw, 110px);
+}
+h1.hero-title {
+  font-family: var(--serif); font-weight: 500;
+  font-size: clamp(38px, 5.6vw, 62px);
+  line-height: 1.07; letter-spacing: -0.015em; margin: 0 0 26px; text-wrap: balance;
+}
+h1.hero-title em {
+  font-style: italic; font-weight: 500;
+  background: linear-gradient(100deg, var(--purple) 10%, var(--violet) 45%, var(--violet-bright) 75%, var(--purple) 95%);
+  background-size: 220% auto;
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  animation: vShimmer 7s ease-in-out infinite;
+}
+.hero-sub { font-size: clamp(16px, 1.8vw, 18px); line-height: 1.6; color: var(--body); max-width: 480px; margin: 0 0 38px; text-wrap: pretty; }
+.hero-ctas { display: flex; align-items: center; gap: 22px; flex-wrap: wrap; }
+
+/* verified card */
+.stage { justify-self: end; position: relative; padding: 26px 10px; }
+.vcard {
+  width: min(408px, 100%); background: #fff;
+  border: 1px solid var(--line-purple); border-radius: 14px;
+  box-shadow: 0 30px 70px -28px rgba(43,22,80,0.35), 0 8px 24px -14px rgba(43,22,80,0.14);
+  transform: rotate(-1.4deg);
+  animation: vFloat 5.5s ease-in-out infinite alternate;
+}
+.vcard-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 22px 24px 18px; }
+.vcard-name { font-size: 17.5px; font-weight: 600; letter-spacing: -0.005em; }
+.vcard-meta { font-size: 13px; color: var(--muted); margin-top: 4px; }
+.badge-verified {
+  display: inline-flex; align-items: center; gap: 6px;
+  border: 1px solid var(--green); color: var(--green);
+  background: rgba(14,138,95,0.06);
+  border-radius: 999px; padding: 4px 11px; font-size: 12px; font-weight: 500; white-space: nowrap;
+}
+.vcard-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; border-top: 1px solid var(--line); }
+.vcard-stat { padding: 14px 0 16px 24px; }
+.vcard-stat + .vcard-stat { padding-left: 20px; border-left: 1px solid var(--line); }
+.vcard-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; color: var(--faint); margin-bottom: 7px; }
+.vcard-value { font-family: var(--mono); font-size: 16.5px; font-weight: 500; }
+.vcard-raising { font-family: var(--mono); font-size: 13.5px; font-weight: 500; color: var(--amber); padding-top: 2px; }
+.vcard-foot {
+  border-top: 1px solid var(--line); background: #FAFAF9;
+  border-radius: 0 0 13px 13px; padding: 13px 24px;
+  font-family: var(--mono); font-size: 11.5px; line-height: 1.65; color: var(--muted);
+}
+.vcard-foot b { color: var(--ink); font-weight: 600; }
+.chip-float {
+  position: absolute; z-index: 2; display: inline-flex; align-items: center; gap: 7px;
+  background: #fff; border: 1px solid var(--line-purple); border-radius: 8px; padding: 8px 12px;
+  font-family: var(--mono); font-size: 11px; color: var(--body);
+  box-shadow: 0 14px 30px -18px rgba(43,22,80,0.4);
+}
+.chip-float.tr { top: 2px; right: -6px; animation: vFloatB 4.8s ease-in-out infinite alternate; }
+.chip-float.bl { bottom: -4px; left: -14px; animation: vFloatC 5.6s ease-in-out infinite alternate; }
+.chip-float .ok { color: var(--green); }
+
+/* ---------- proof strip ---------- */
+.proof {
+  position: relative; overflow: hidden;
+  background: #FAFAF9;
+  border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+}
+.proof-inner { position: relative; display: flex; align-items: baseline; gap: clamp(28px, 5vw, 56px); padding-top: 30px; padding-bottom: 30px; flex-wrap: wrap; }
+.proof-stat { display: flex; align-items: baseline; gap: 10px; }
+.proof-stat .num { font-family: var(--mono); font-size: clamp(18px, 2vw, 21px); font-weight: 500; color: var(--purple); }
+.proof-stat .lbl { font-size: 13px; color: var(--muted); }
+.proof-note { margin-left: auto; font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; color: var(--faint); }
+
+/* ---------- intelligence ---------- */
+.intel { position: relative; overflow: hidden; }
+.intel::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background-image: radial-gradient(rgba(70,35,122,0.08) 1px, transparent 1px);
+  background-size: 26px 26px;
+  -webkit-mask-image: radial-gradient(700px 420px at 50% 62%, black, transparent 78%);
+  mask-image: radial-gradient(700px 420px at 50% 62%, black, transparent 78%);
+}
+.intel-inner { position: relative; z-index: 1; padding-top: clamp(70px, 9vw, 110px); padding-bottom: clamp(60px, 8vw, 100px); }
+.intel-diagram {
+  position: relative; margin-top: 44px;
+  display: grid; grid-template-columns: 1fr auto 1fr; gap: clamp(28px, 5vw, 64px);
+  align-items: center;
+}
+.raw-card {
+  background: #fff; border: 1px dashed #CDC5DD; border-radius: 10px;
+  transform: rotate(-2deg); box-shadow: 0 16px 36px -26px rgba(43,22,80,0.35);
+  max-width: 320px;
+}
+.raw-card-head { padding: 10px 16px; border-bottom: 1px dashed #CDC5DD; font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.1em; color: var(--faint); }
+.raw-card-body { padding: 12px 16px; display: flex; flex-direction: column; gap: 9px; font-family: var(--mono); font-size: 11.5px; color: var(--faint); }
+.intel-node { position: relative; width: 92px; height: 92px; justify-self: center; }
+.intel-node .ring { position: absolute; inset: 0; border: 1px solid rgba(109,40,217,0.4); border-radius: 999px; animation: vPulse 2.8s ease-out infinite; }
+.intel-node .ring.d { animation-delay: 1.4s; }
+.intel-node .core {
+  position: absolute; inset: 0; background: #fff; border: 1px solid var(--line-purple); border-radius: 999px;
+  box-shadow: 0 18px 40px -18px rgba(70,35,122,0.45);
+  display: flex; align-items: center; justify-content: center;
+}
+.mini-stack { display: flex; flex-direction: column; gap: 18px; max-width: 300px; justify-self: end; }
+.mini-card {
+  background: #fff; border: 1px solid var(--line-purple); border-radius: 10px; padding: 13px 15px;
+  box-shadow: 0 16px 36px -22px rgba(43,22,80,0.3);
+}
+.mini-card:nth-child(1) { animation: vFloatB 5s ease-in-out infinite alternate; }
+.mini-card:nth-child(2) { animation: vFloatC 5.8s ease-in-out infinite alternate; margin-right: 26px; }
+.mini-card:nth-child(3) { animation: vFloatB 6.4s ease-in-out infinite alternate; }
+.mini-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.mini-head .nm { font-size: 13.5px; font-weight: 600; }
+.mini-badge { border: 1px solid var(--green); color: var(--green); background: rgba(14,138,95,0.06); border-radius: 999px; padding: 2px 8px; font-size: 10.5px; font-weight: 500; white-space: nowrap; }
+.mini-sub { font-family: var(--mono); font-size: 11.5px; color: var(--muted); margin-top: 8px; }
+.mini-sub.amber { color: var(--amber); }
+.intel-lines { position: absolute; inset: 0; pointer-events: none; }
+.intel-lines line { stroke: #B9A8E0; stroke-width: 1.5; stroke-dasharray: 3 17; stroke-linecap: round; animation: vDash 1.7s linear infinite; }
+.intel-caption { margin-top: 38px; display: flex; flex-direction: column; gap: 10px; }
+.intel-caption .tags { font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em; color: var(--faint); }
+.intel-caption .line2 { font-size: 15px; color: var(--body); }
+
+/* ---------- events ---------- */
+.events { border-top: 1px solid var(--line); }
+.events-inner { padding-top: clamp(70px, 9vw, 100px); padding-bottom: clamp(70px, 9vw, 110px); }
+.events-head { display: flex; align-items: baseline; justify-content: space-between; gap: 32px; margin-bottom: 40px; flex-wrap: wrap; }
+.events-note { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; color: var(--faint); }
+.event-cols {
+  display: grid; grid-template-columns: 54px 1.4fr 1fr 1fr 20px; gap: 24px;
+  padding: 0 16px 12px; align-items: center;
+}
+.event-cols span { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.12em; color: var(--faint); }
+.event-row {
+  display: grid; grid-template-columns: 54px 1.4fr 1fr 1fr 20px; gap: 24px; align-items: center;
+  padding: 18px 16px; margin: 0 -16px; border-top: 1px solid var(--line-purple);
+  text-decoration: none; color: var(--ink); border-radius: 10px;
+  transition: background 0.25s, transform 0.25s;
+}
+.event-row:last-of-type { border-bottom: 1px solid var(--line-purple); }
+.event-row:hover { background: #FAFAF9; transform: translateX(4px); }
+.event-row .mono-badge {
+  width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid var(--line-purple); border-radius: 9px; background: #fff;
+  font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--purple);
+}
+.event-row .ename { font-size: 16px; font-weight: 600; }
+.event-row .eloc { font-size: 14.5px; color: var(--body); }
+.event-row .edate { font-family: var(--mono); font-size: 13px; color: var(--body); }
+.event-row .arr { color: var(--faint); transition: transform 0.25s, color 0.25s; }
+.event-row:hover .arr { transform: translateX(4px); color: var(--violet); }
+
+/* ---------- how ---------- */
+.how { border-top: 1px solid var(--line); }
+.how-inner { padding-top: clamp(70px, 9vw, 110px); padding-bottom: clamp(70px, 9vw, 120px); }
+.how-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 56px; }
+.how-card {
+  position: relative; background: #fff; border: 1px solid var(--line-purple); border-radius: 12px;
+  padding: 30px 28px 32px; overflow: hidden;
+  transition: transform 0.35s ease, box-shadow 0.35s ease, border-color 0.35s;
+}
+.how-card:hover { transform: translateY(-5px); box-shadow: 0 26px 50px -28px rgba(70,35,122,0.35); border-color: #D4C6EE; }
+.how-card .ghost-num {
+  position: absolute; top: 6px; right: 12px; font-family: var(--serif);
+  font-size: 96px; line-height: 1; color: rgba(70,35,122,0.07); pointer-events: none;
+}
+.how-card .step { font-family: var(--mono); font-size: 12px; color: var(--violet); margin-bottom: 14px; }
+.how-card .ttl { font-size: 18px; font-weight: 600; margin-bottom: 10px; }
+.how-card p { font-size: 15px; line-height: 1.6; color: var(--body); margin: 0; }
+
+/* ---------- why ---------- */
+.why-inner {
+  padding-top: clamp(70px, 9vw, 110px); padding-bottom: clamp(70px, 9vw, 120px);
+  display: grid; grid-template-columns: 1fr 1.1fr; gap: clamp(40px, 7vw, 84px); align-items: start;
+}
+.why-item { border-top: 1px solid var(--line-purple); padding: 20px 0; display: flex; gap: 18px; }
+.why-item:last-child { border-bottom: 1px solid var(--line-purple); }
+.why-item .tick {
+  flex: none; width: 26px; height: 26px; border-radius: 999px;
+  display: inline-flex; align-items: center; justify-content: center; font-size: 12px;
+  color: #fff; background: linear-gradient(135deg, var(--violet), var(--purple));
+  box-shadow: 0 6px 14px -6px rgba(70,35,122,0.5);
+}
+.why-item p { font-size: 15.5px; line-height: 1.55; color: var(--body); margin: 2px 0 0; }
+.why-item p b { font-weight: 600; color: var(--ink); }
+
+/* ---------- methodology ---------- */
+.method {
+  position: relative; overflow: hidden;
+  background: #FAFAF9;
+  border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+}
+.method-blob { position: absolute; width: 560px; height: 420px; right: -140px; bottom: -160px; border-radius: 999px; background: radial-gradient(closest-side, rgba(139,92,246,0.07), transparent 72%); filter: blur(60px); pointer-events: none; animation: vDrift 16s ease-in-out infinite alternate; }
+.method-inner {
+  position: relative; z-index: 1;
+  padding-top: clamp(70px, 9vw, 110px); padding-bottom: clamp(70px, 9vw, 110px);
+  display: grid; grid-template-columns: 1fr 452px; gap: clamp(40px, 7vw, 84px); align-items: center;
+}
+.method-row { border-top: 1px solid var(--line); padding: 18px 0; display: grid; grid-template-columns: 148px 1fr; gap: 20px; }
+.method-row:last-of-type { border-bottom: 1px solid var(--line); }
+.method-row .k { font-size: 15px; font-weight: 600; }
+.method-row .v { font-size: 15px; line-height: 1.55; color: var(--body); }
+.method .vcard { transform: none; animation: none; box-shadow: 0 20px 50px -24px rgba(43,22,80,0.2); transition: transform 0.35s ease, box-shadow 0.35s ease; }
+.method .vcard:hover { transform: translateY(-4px); box-shadow: 0 28px 60px -26px rgba(43,22,80,0.26); }
+.method-cardnote { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; color: var(--faint); margin-top: 16px; text-align: right; }
+
+/* ---------- ecosystem ---------- */
+.eco-inner { padding-top: clamp(74px, 9vw, 118px); padding-bottom: clamp(74px, 9vw, 128px); }
+.eco-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 52px; }
+.eco-card {
+  position: relative; border: 1px solid var(--line-purple); border-radius: 12px; padding: 30px 30px 34px;
+  display: flex; flex-direction: column; gap: 12px; background: #fff; overflow: hidden;
+  transition: transform 0.35s ease, box-shadow 0.35s ease, border-color 0.35s;
+}
+.eco-card::before {
+  content: ""; position: absolute; left: 0; right: 0; top: 0; height: 3px;
+  background: linear-gradient(90deg, var(--violet), var(--lilac));
+  opacity: 0; transition: opacity 0.35s;
+}
+.eco-card:hover { transform: translateY(-5px); box-shadow: 0 26px 50px -28px rgba(70,35,122,0.3); border-color: #D4C6EE; }
+.eco-card:hover::before { opacity: 1; }
+.eco-card .who { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.14em; color: var(--violet); }
+.eco-card .ttl { font-size: 19px; font-weight: 600; }
+.eco-card p { font-size: 15px; line-height: 1.6; color: var(--body); margin: 0; flex: 1; }
+.pill { display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; padding: 5px 12px; font-size: 12px; font-weight: 500; }
+.pill.raising { border: 1px solid #EFD9B8; color: var(--amber); font-family: var(--mono); background: rgba(217,119,6,0.05); }
+.pill.verified { border: 1px solid var(--green); color: var(--green); background: rgba(14,138,95,0.06); }
+
+/* ---------- horizon (dark) ---------- */
+.horizon { position: relative; background: var(--ink); overflow: hidden; }
+.horizon::before {
+  content: ""; position: absolute; inset: 0;
+  background-image: radial-gradient(rgba(250,250,249,0.07) 1px, transparent 1px);
+  background-size: 26px 26px;
+}
+.horizon-blob { position: absolute; width: 700px; height: 480px; left: 50%; top: -220px; transform: translateX(-50%); border-radius: 999px; background: radial-gradient(closest-side, rgba(109,40,217,0.4), transparent 70%); filter: blur(70px); pointer-events: none; }
+.net-canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; opacity: 0.9; }
+.horizon-inner { position: relative; padding-top: clamp(84px, 11vw, 130px); }
+.horizon-title {
+  font-family: var(--serif); font-weight: 500;
+  font-size: clamp(30px, 4.6vw, 47px); line-height: 1.22; letter-spacing: -0.01em;
+  max-width: 880px; margin: 0; color: #FAFAF9; text-wrap: balance;
+}
+.horizon-title em {
+  font-style: italic;
+  background: linear-gradient(100deg, var(--lilac), var(--violet-bright), var(--lilac));
+  background-size: 220% auto;
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  animation: vShimmer 7s ease-in-out infinite;
+}
+.horizon-cta { display: flex; align-items: center; gap: 24px; margin-top: 42px; flex-wrap: wrap; }
+.horizon-cta .note { font-size: 14.5px; color: var(--faint); }
+.marquee { position: relative; margin-top: clamp(56px, 8vw, 96px); border-top: 1px solid rgba(250,250,249,0.13); padding: 22px 0; overflow: hidden; }
+.marquee-track { display: flex; gap: 64px; width: max-content; animation: vMarquee 46s linear infinite; }
+.marquee:hover .marquee-track { animation-play-state: paused; }
+.marquee-set { display: flex; gap: 64px; font-family: var(--mono); font-size: 12px; color: rgba(250,250,249,0.55); white-space: nowrap; }
+.marquee-set .ok { color: var(--green-bright); }
+.marquee-set .amber { color: var(--amber-bright); }
+
+/* ---------- briefs ---------- */
+.briefs { border-top: 1px solid var(--line-purple); background: linear-gradient(180deg, var(--lav-1) 0%, #FFFFFF 30%); }
+.briefs-inner { padding-top: clamp(70px, 9vw, 110px); padding-bottom: clamp(74px, 9vw, 128px); }
+.brief-row {
+  border-top: 1px solid var(--line-purple); padding: 28px 16px; margin: 0 -16px;
+  display: grid; grid-template-columns: 130px 1fr auto; gap: 32px; align-items: baseline;
+  border-radius: 10px; transition: background 0.25s;
+}
+.brief-row:last-of-type { border-bottom: 1px solid var(--line-purple); }
+.brief-row:hover { background: var(--lav-1); }
+.brief-row .date { font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em; color: var(--faint); }
+.brief-row .ttl {
+  font-family: var(--serif); font-weight: 500; font-size: 23px; letter-spacing: -0.005em;
+  text-decoration: none; color: var(--ink); transition: color 0.2s;
+}
+.brief-row .ttl:hover { color: var(--violet); }
+.brief-row p { font-size: 14.5px; line-height: 1.55; color: var(--body); margin: 8px 0 0; max-width: 560px; }
+.brief-row .read { font-family: var(--mono); font-size: 13px; text-decoration: none; color: var(--body); transition: color 0.2s; }
+.brief-row .read:hover { color: var(--violet); }
+
+/* ---------- footer ---------- */
+footer.site {
+  position: relative; overflow: hidden;
+  border-top: 1px solid var(--line);
+  background: #FAFAF9;
+}
+.footer-inner { position: relative; padding-top: 72px; padding-bottom: 40px; }
+.footer-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 48px; flex-wrap: wrap; }
+.footer-brand span { font-family: var(--serif); font-size: 20px; font-weight: 600; }
+.footer-tag { font-family: var(--serif); font-style: italic; font-size: 14.5px; color: var(--muted); margin-top: 8px; }
+.footer-links { display: flex; gap: 28px; flex-wrap: wrap; }
+.footer-links a { font-size: 14px; text-decoration: none; color: var(--body); transition: color 0.2s; }
+.footer-links a:hover { color: var(--violet); }
+.badge-zone { margin-top: 56px; }
+.badge-zone .lbl { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.14em; color: var(--faint); margin-bottom: 14px; }
+.badge-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.pbadge { display: inline-flex; align-items: center; gap: 7px; border-radius: 999px; padding: 7px 14px; font-size: 12.5px; font-weight: 500; }
+.pbadge.light { background: #fff; border: 1px solid var(--line); color: var(--ink); }
+.pbadge.dark { background: var(--ink); border: 1px solid var(--ink); color: #FAFAF9; }
+.badge-row .hint { font-size: 12.5px; color: var(--muted); margin-left: 8px; }
+/* Quartr-style giant wordmark sign-off */
+.footer-giant {
+  margin-top: 72px;
+  font-family: var(--mono); font-weight: 500; letter-spacing: -0.06em;
+  font-size: clamp(48px, 9vw, 118px); line-height: 0.9;
+  color: var(--ink); user-select: none; white-space: nowrap;
+}
+.footer-giant i {
+  display: inline-block;
+  width: 0.16em; height: 0.16em;
+  background: var(--purple);
+  margin-left: 0.14em;
+}
+.footer-base {
+  margin-top: 40px; padding-top: 22px; border-top: 1px solid var(--line);
+  display: flex; justify-content: space-between; gap: 24px; flex-wrap: wrap;
+  font-family: var(--mono); font-size: 12px; color: var(--faint);
+}
+
+/* ---------- responsive ---------- */
+@media (max-width: 980px) {
+  .hero-inner { grid-template-columns: 1fr; }
+  .stage { justify-self: center; width: 100%; max-width: 440px; }
+  .method-inner { grid-template-columns: 1fr; }
+  .why-inner { grid-template-columns: 1fr; gap: 36px; }
+  .how-grid, .eco-grid { grid-template-columns: 1fr; gap: 18px; }
+  .intel-diagram { grid-template-columns: 1fr; justify-items: center; gap: 34px; }
+  .raw-card { max-width: 360px; }
+  .mini-stack { justify-self: center; max-width: 360px; width: 100%; }
+  .mini-card:nth-child(2) { margin-right: 0; margin-left: 26px; }
+  .intel-lines { display: none; }
+}
+@media (max-width: 860px) {
+  .nav-links, .nav-cta { display: none; }
+  .menu-btn { display: block; }
+  .event-cols { display: none; }
+  .event-row { grid-template-columns: 38px 1fr 20px; grid-template-rows: auto auto auto; row-gap: 4px; gap: 16px; }
+  .event-row .mono-badge { grid-column: 1; grid-row: 1 / 4; align-self: start; }
+  .event-row .ename { grid-column: 2; grid-row: 1; }
+  .event-row .eloc { grid-column: 2; grid-row: 2; font-size: 13.5px; color: var(--muted); }
+  .event-row .edate { grid-column: 2; grid-row: 3; font-size: 12px; color: var(--muted); }
+  .event-row .arr { grid-column: 3; grid-row: 1; }
+  .brief-row { grid-template-columns: 1fr; gap: 8px; }
+  .method-row { grid-template-columns: 1fr; gap: 6px; }
+  .proof-note { margin-left: 0; width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  .reveal { opacity: 1; transform: none; }
+}
+</style>
+</head>
+<body>
+
+<nav class="site" id="siteNav">
+  <div class="wrap nav-inner">
+    <a href="#top" class="brand">
+      <span class="verata-logo">verata<i></i></span>
+    </a>
+    <div class="nav-links">
+      <a href="#how">For Organizers</a>
+      <a href="#intelligence">Intelligence</a>
+      <a href="#events">Events</a>
+      <a href="#methodology">Methodology</a>
+      <a href="#briefs">Briefs</a>
+    </div>
+    <div class="nav-cta">
+      <a href="#contact" class="signin">Sign in</a>
+      <a href="#contact" class="btn">Partner with us</a>
+    </div>
+    <button class="menu-btn" aria-label="Menu" onclick="document.getElementById('siteNav').classList.toggle('open')">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 5h14M3 10h14M3 15h14" stroke="#17151C" stroke-width="1.8" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+  <div class="mobile-panel">
+    <a href="#how" onclick="document.getElementById('siteNav').classList.remove('open')">For Organizers</a>
+    <a href="#intelligence" onclick="document.getElementById('siteNav').classList.remove('open')">Intelligence</a>
+    <a href="#events" onclick="document.getElementById('siteNav').classList.remove('open')">Events</a>
+    <a href="#methodology" onclick="document.getElementById('siteNav').classList.remove('open')">Methodology</a>
+    <a href="#briefs" onclick="document.getElementById('siteNav').classList.remove('open')">Briefs</a>
+    <a href="#contact" onclick="document.getElementById('siteNav').classList.remove('open')">Sign in</a>
+    <a href="#contact" class="btn" onclick="document.getElementById('siteNav').classList.remove('open')">Partner with us</a>
+  </div>
+</nav>
+
+<header id="top" class="hero">
+  <div class="hero-grid-lines"></div>
+  <div class="hero-blob a"></div>
+  <div class="hero-blob b"></div>
+  <div class="wrap hero-inner">
+    <div>
+      <div class="eyebrow reveal">VERATA COMMUNITY INTELLIGENCE</div>
+      <h1 class="hero-title reveal" data-delay="90">Turn every startup event into a <em>permanent intelligence asset.</em></h1>
+      <p class="hero-sub reveal" data-delay="180">Verata verifies your attendee, startup, and investor lists against public sources, then delivers a branded live directory your community searches all year.</p>
+      <div class="hero-ctas reveal" data-delay="270">
+        <a href="#contact" class="btn">Partner with us</a>
+        <a href="#methodology" class="textlink">See a live directory <span class="arr">→</span></a>
+      </div>
+    </div>
+    <div class="stage reveal" data-delay="380">
+      <div class="chip-float tr"><span class="ok">✓</span> ORC filing · confirmed</div>
+      <div class="chip-float bl"><b>12</b>&nbsp;sources checked</div>
+      <div class="vcard">
+        <div class="vcard-head">
+          <div>
+            <div class="vcard-name">Kanzu Logistics</div>
+            <div class="vcard-meta">Accra, Ghana · Series A</div>
+          </div>
+          <div class="badge-verified">✓ Verified</div>
+        </div>
+        <div class="vcard-stats">
+          <div class="vcard-stat">
+            <div class="vcard-label">TOTAL RAISED</div>
+            <div class="vcard-value">$8.2M</div>
+          </div>
+          <div class="vcard-stat">
+            <div class="vcard-label">FOUNDED</div>
+            <div class="vcard-value">2021</div>
+          </div>
+          <div class="vcard-stat">
+            <div class="vcard-label">STATUS</div>
+            <div class="vcard-raising">● Raising</div>
+          </div>
+        </div>
+        <div class="vcard-foot">Sources: TechCrunch 03/2025 · ORC filing · company site — Confidence: <b>High</b></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section class="proof">
+  <div class="wrap proof-inner">
+    <div class="proof-stat"><span class="num" data-count="2,340">2,340</span><span class="lbl">profiles verified</span></div>
+    <div class="proof-stat"><span class="num" data-count="14">14</span><span class="lbl">events covered</span></div>
+    <div class="proof-stat"><span class="num" data-count="11,286">11,286</span><span class="lbl">sources checked</span></div>
+    <div class="proof-note">LIVE COUNTS · UPDATED WEEKLY</div>
+  </div>
+</section>
+
+<section id="intelligence" class="intel">
+  <div class="wrap intel-inner">
+    <div class="eyebrow reveal">THE INTELLIGENCE LAYER</div>
+    <h2 class="section-title reveal" data-delay="80">One event in. A living network out.</h2>
+    <p class="section-sub reveal" data-delay="140">Raw lists go in messy. What comes out is verified, connected, and searchable — and it keeps compounding long after the room empties.</p>
+    <div class="intel-diagram reveal" data-delay="220">
+      <svg class="intel-lines" id="intelLines">
+        <line></line>
+        <line></line>
+        <line></line>
+        <line></line>
+      </svg>
+      <div class="raw-card" id="rawCard">
+        <div class="raw-card-head">ATTENDEES_RAW.CSV</div>
+        <div class="raw-card-body">
+          <span>Kanzu Logistics — stage?</span>
+          <span>A. Mensah — fintech(?)</span>
+          <span>no website · no filings</span>
+          <span>duplicate row ×2</span>
+          <span>self-reported: “$2M raised”</span>
+        </div>
+      </div>
+      <div class="intel-node" id="intelNode">
+        <div class="ring"></div>
+        <div class="ring d"></div>
+        <div class="core">
+          <span class="verata-logo" style="font-size: 32px;">v<i></i></span>
+        </div>
+      </div>
+      <div class="mini-stack">
+        <div class="mini-card">
+          <div class="mini-head"><span class="nm">Kanzu Logistics</span><span class="mini-badge">✓ Verified</span></div>
+          <div class="mini-sub">$8.2M raised · 3 sources</div>
+        </div>
+        <div class="mini-card">
+          <div class="mini-head"><span class="nm">Tafara Pay</span><span class="mini-badge">✓ Verified</span></div>
+          <div class="mini-sub amber">● Raising · seed</div>
+        </div>
+        <div class="mini-card">
+          <div class="mini-head"><span class="nm">Nawiri Health</span><span class="mini-badge">✓ Verified</span></div>
+          <div class="mini-sub">Confidence: High</div>
+        </div>
+      </div>
+    </div>
+    <div class="intel-caption reveal" data-delay="280">
+      <div class="tags">SUMMITS · ACCELERATOR COHORTS · DEMO DAYS · TRADE MISSIONS · INVESTOR FORUMS</div>
+      <div class="line2">Any convening becomes a dataset — verified once, compounding all year.</div>
+    </div>
+  </div>
+</section>
+
+<section id="events" class="events">
+  <div class="wrap events-inner">
+    <div class="events-head reveal">
+      <div>
+        <div class="eyebrow">UPCOMING EVENTS</div>
+        <h2 class="section-title" style="margin: 0;">Where the network grows next.</h2>
+      </div>
+      <div class="events-note">IN CONVERSATION · 2026 SEASON</div>
+    </div>
+    <div class="reveal" data-delay="120">
+      <div class="event-cols">
+        <span></span><span>EVENT</span><span>LOCATION</span><span>DATE</span><span></span>
+      </div>
+      <a href="#contact" class="event-row">
+        <span class="mono-badge">BA</span>
+        <span class="ename">Beyond Africa 2026</span>
+        <span class="eloc">Austin, TX, USA</span>
+        <span class="edate">Nov 7, 2026</span>
+        <span class="arr">→</span>
+      </a>
+      <a href="#contact" class="event-row">
+        <span class="mono-badge">GX</span>
+        <span class="ename">Gitex Nigeria 2026</span>
+        <span class="eloc">Lagos &amp; Abuja, Nigeria</span>
+        <span class="edate">Sep 2026</span>
+        <span class="arr">→</span>
+      </a>
+      <a href="#contact" class="event-row">
+        <span class="mono-badge">AA</span>
+        <span class="ename">AfricArena</span>
+        <span class="eloc">Cape Town, South Africa</span>
+        <span class="edate">Dec 2–3, 2026</span>
+        <span class="arr">→</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section id="how" class="how">
+  <div class="wrap how-inner">
+    <div class="eyebrow reveal">HOW IT WORKS</div>
+    <h2 class="section-title reveal" data-delay="80">Zero lift for your team.</h2>
+    <div class="how-grid">
+      <div class="how-card reveal" data-delay="120">
+        <span class="ghost-num">01</span>
+        <div class="step">01</div>
+        <div class="ttl">Share your lists</div>
+        <p>Attendees, startups, investors and corporates from your event — that’s all we need to start. Spreadsheets are fine.</p>
+      </div>
+      <div class="how-card reveal" data-delay="240">
+        <span class="ghost-num">02</span>
+        <div class="step">02</div>
+        <div class="ttl">We research &amp; verify</div>
+        <p>Sector, country, stage and funding confirmed through public sources — never self-reported forms.</p>
+      </div>
+      <div class="how-card reveal" data-delay="360">
+        <span class="ghost-num">03</span>
+        <div class="step">03</div>
+        <div class="ttl">Your directory goes live</div>
+        <p>A real-time, branded directory where founders stay discoverable and investors source deals — all year round.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="why">
+  <div class="wrap why-inner">
+    <div class="reveal">
+      <div class="eyebrow">WHY ORGANIZERS USE VERATA</div>
+      <h2 class="section-title">Built for organizers who want their event to <em style="font-style: italic;">keep working after it ends.</em></h2>
+      <a href="#contact" class="textlink">Partner with us <span class="arr">→</span></a>
+    </div>
+    <div>
+      <div class="why-item reveal" data-delay="80">
+        <span class="tick">✓</span>
+        <p><b>A shareable asset</b> — a live directory your network actually uses, credited to your event.</p>
+      </div>
+      <div class="why-item reveal" data-delay="160">
+        <span class="tick">✓</span>
+        <p><b>A better attendee experience</b> — people leave with a tool they keep using, not just a badge scan.</p>
+      </div>
+      <div class="why-item reveal" data-delay="240">
+        <span class="tick">✓</span>
+        <p><b>A stronger pitch for next year</b> — a track record of verified outcomes sells the next edition.</p>
+      </div>
+      <div class="why-item reveal" data-delay="320">
+        <span class="tick">✓</span>
+        <p><b>Zero lift on your side</b> — you supply the names; we handle research, verification and the build.</p>
+      </div>
+      <div class="why-item reveal" data-delay="400">
+        <span class="tick">✓</span>
+        <p><b>Ecosystem impact, demonstrated</b> — show sponsors and partners what your event actually produced.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="methodology" class="method">
+  <div class="method-blob"></div>
+  <div class="wrap method-inner">
+    <div>
+      <div class="eyebrow reveal">METHODOLOGY</div>
+      <h2 class="section-title reveal" data-delay="80">Every number shows its work.</h2>
+      <p class="section-sub reveal" data-delay="160" style="margin-bottom: 40px;">African venture’s four main funding trackers disagree by over $2B on the same year. Verata exists to end that: one dataset, checked against public sources.</p>
+      <div class="method-row reveal" data-delay="220">
+        <div class="k">Sourced</div>
+        <div class="v">Every data point carries its source and a confidence grade — filings, credible press, company disclosures.</div>
+      </div>
+      <div class="method-row reveal" data-delay="300">
+        <div class="k">Public</div>
+        <div class="v">How we verify, and how we grade confidence, is published for anyone to read.</div>
+      </div>
+      <div class="method-row reveal" data-delay="380">
+        <div class="k">Checkable</div>
+        <div class="v">Investors can trace any figure back to its origin — and tell us when we’re wrong.</div>
+      </div>
+      <a href="#briefs" class="textlink reveal" data-delay="440" style="margin-top: 30px;">Read the methodology <span class="arr">→</span></a>
+    </div>
+    <div class="reveal" data-delay="200">
+      <div class="vcard">
+        <div class="vcard-head">
+          <div>
+            <div class="vcard-name">Tafara Pay</div>
+            <div class="vcard-meta">Lagos, Nigeria · Seed</div>
+          </div>
+          <div class="badge-verified">✓ Verified</div>
+        </div>
+        <div class="vcard-stats">
+          <div class="vcard-stat">
+            <div class="vcard-label">TOTAL RAISED</div>
+            <div class="vcard-value">$1.2M</div>
+          </div>
+          <div class="vcard-stat">
+            <div class="vcard-label">FOUNDED</div>
+            <div class="vcard-value">2023</div>
+          </div>
+          <div class="vcard-stat">
+            <div class="vcard-label">STATUS</div>
+            <div class="vcard-raising">● Raising</div>
+          </div>
+        </div>
+        <div class="vcard-foot">Sources: TechCrunch 04/2024 · CAC filing · company site — Confidence: <b>High</b></div>
+      </div>
+      <div class="method-cardnote">EVERY PROFILE SHIPS WITH ITS SOURCES</div>
+    </div>
+  </div>
+</section>
+
+<section id="ecosystem">
+  <div class="wrap eco-inner">
+    <div class="eyebrow reveal">FOR THE ECOSYSTEM</div>
+    <h2 class="section-title reveal" data-delay="80">One dataset, three sides of the market.</h2>
+    <div class="eco-grid">
+      <div class="eco-card reveal" data-delay="120">
+        <div class="who">ORGANIZERS</div>
+        <div class="ttl">Your event keeps working after it ends</div>
+        <p>A branded, year-round directory gives sponsors a longer story and your community a reason to return — with zero lift from your team.</p>
+        <a href="#contact" class="textlink" style="font-size: 14px; margin-top: 8px;">Partner with us <span class="arr">→</span></a>
+      </div>
+      <div class="eco-card reveal" data-delay="240">
+        <div class="who">FOUNDERS</div>
+        <div class="ttl">Be discovered on verified numbers</div>
+        <p>Not warm intros. Set your fundraising flag when you’re ready; stay anonymized where it’s sensitive.</p>
+        <div style="margin-top: 8px;"><span class="pill raising">● Raising</span></div>
+      </div>
+      <div class="eco-card reveal" data-delay="360">
+        <div class="who">INVESTORS</div>
+        <div class="ttl">Source deals from verified traction</div>
+        <p>Every figure is checked before it reaches your screen. Ask in plain language; answers arrive with citations.</p>
+        <div style="margin-top: 8px;"><span class="pill verified">✓ Verified</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="horizon">
+  <div class="horizon-blob"></div>
+  <canvas class="net-canvas" id="netCanvas"></canvas>
+  <div class="wrap horizon-inner">
+    <div class="eyebrow on-dark reveal">THE HORIZON</div>
+    <p class="horizon-title reveal" data-delay="80">Verata is building the verified data layer for African venture. It starts with <em>your event.</em></p>
+    <div class="horizon-cta reveal" data-delay="160">
+      <a href="#contact" class="btn">Partner with us</a>
+      <span class="note">You share the lists; we handle the rest. No integrations required.</span>
+    </div>
+  </div>
+  <div class="marquee">
+    <div class="marquee-track">
+      <div class="marquee-set">
+        <span><span class="ok">✓ VERIFIED</span> — Kanzu Logistics · ORC filing</span>
+        <span><span class="amber">● RAISING</span> — fintech · Lagos</span>
+        <span><span class="ok">✓ VERIFIED</span> — Nawiri Health · BRS filing</span>
+        <span>CONFIDENCE: HIGH — 3 sources</span>
+        <span><span class="ok">✓ VERIFIED</span> — Tafara Pay · CAC filing</span>
+        <span><span class="amber">● RAISING</span> — healthtech · Nairobi</span>
+        <span>2,340 PROFILES — live count</span>
+        <span><span class="ok">✓ VERIFIED</span> — 14 events covered</span>
+      </div>
+      <div class="marquee-set">
+        <span><span class="ok">✓ VERIFIED</span> — Kanzu Logistics · ORC filing</span>
+        <span><span class="amber">● RAISING</span> — fintech · Lagos</span>
+        <span><span class="ok">✓ VERIFIED</span> — Nawiri Health · BRS filing</span>
+        <span>CONFIDENCE: HIGH — 3 sources</span>
+        <span><span class="ok">✓ VERIFIED</span> — Tafara Pay · CAC filing</span>
+        <span><span class="amber">● RAISING</span> — healthtech · Nairobi</span>
+        <span>2,340 PROFILES — live count</span>
+        <span><span class="ok">✓ VERIFIED</span> — 14 events covered</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="briefs" class="briefs">
+  <div class="wrap briefs-inner">
+    <div class="eyebrow reveal">THE VERATA BRIEF</div>
+    <h2 class="section-title reveal" data-delay="80">Free monthly briefs.</h2>
+    <p class="section-sub reveal" data-delay="140" style="margin-bottom: 56px;">Every number sourced. Every source named.</p>
+    <div class="brief-row reveal" data-delay="200">
+      <div class="date">AUG 2026</div>
+      <div>
+        <a href="#briefs" class="ttl">The $2B disagreement</a>
+        <p>Four funding trackers, one year, answers $2B apart. Where the gaps come from.</p>
+      </div>
+      <a href="#briefs" class="read">Read →</a>
+    </div>
+    <div class="brief-row reveal" data-delay="260">
+      <div class="date">JUL 2026</div>
+      <div>
+        <a href="#briefs" class="ttl">What actually got funded in H1 2026</a>
+        <p>A verified account of the half-year, checked source by source.</p>
+      </div>
+      <a href="#briefs" class="read">Read →</a>
+    </div>
+    <div class="brief-row reveal" data-delay="320">
+      <div class="date">JUN 2026</div>
+      <div>
+        <a href="#briefs" class="ttl">After the booths come down</a>
+        <p>What happens to an event community in the 90 days after closing night.</p>
+      </div>
+      <a href="#briefs" class="read">Read →</a>
+    </div>
+  </div>
+</section>
+
+<footer id="contact" class="site">
+  <div class="wrap footer-inner">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <span class="verata-logo" style="font-size: 19px;">verata<i></i></span>
+        <div class="footer-tag">True data.</div>
+      </div>
+      <div class="footer-links">
+        <a href="#how">For Organizers</a>
+        <a href="#methodology">Methodology</a>
+        <a href="#briefs">Briefs</a>
+        <a href="mailto:hello@verata.co">hello@verata.co</a>
+      </div>
+    </div>
+    <div class="badge-zone">
+      <div class="lbl">THE PARTNER BADGE</div>
+      <div class="badge-row">
+        <span class="pbadge light">Powered by&nbsp;<span class="verata-logo" style="font-size: 13px;">verata<i></i></span></span>
+        <span class="pbadge dark">Powered by&nbsp;<span class="verata-logo on-dark" style="font-size: 13px;">verata<i></i></span></span>
+        <span class="hint">Partners embed this on their directories.</span>
+      </div>
+    </div>
+    <div class="footer-giant reveal" aria-hidden="true">verata<i></i></div>
+    <div class="footer-base">
+      <span>© 2026 Verata Intelligence</span>
+      <span>Verified against public sources</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var els = Array.prototype.slice.call(document.querySelectorAll(".reveal"));
+  els.forEach(function (el) {
+    var d = parseInt(el.getAttribute("data-delay"), 10) || 0;
+    el.style.transitionDelay = d + "ms";
+  });
+  var reveal = function (el) { el.classList.add("in"); el.style.transitionDelay = (parseInt(el.getAttribute("data-delay"), 10) || 0) + "ms"; };
+
+  /* floating pill nav on scroll */
+  var nav = document.getElementById("siteNav");
+  var onScroll = function () {
+    if (window.scrollY > 40) nav.classList.add("float");
+    else nav.classList.remove("float");
+  };
+  window.addEventListener("scroll", onScroll, { passive: true });
+  onScroll();
+  if (!("IntersectionObserver" in window)) {
+    els.forEach(reveal);
+  } else {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) { reveal(e.target); io.unobserve(e.target); }
+      });
+    }, { threshold: 0.1, rootMargin: "0px 0px -40px 0px" });
+    els.forEach(function (el) { io.observe(el); });
+    setTimeout(function () { els.forEach(function (el) { el.classList.add("in"); }); }, 4500);
+  }
+
+  var nums = Array.prototype.slice.call(document.querySelectorAll("[data-count]"));
+  if ("IntersectionObserver" in window) {
+    var io2 = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        io2.unobserve(e.target);
+        var el = e.target;
+        var raw = el.getAttribute("data-count");
+        var target = parseFloat(raw.replace(/,/g, ""));
+        var withCommas = raw.indexOf(",") !== -1;
+        var t0 = performance.now(), dur = 1500;
+        var tick = function (t) {
+          var p = Math.min(1, (t - t0) / dur);
+          var eased = 1 - Math.pow(1 - p, 3);
+          if (p < 1) {
+            var v = Math.round(target * eased);
+            el.textContent = withCommas ? v.toLocaleString("en-US") : String(v);
+            requestAnimationFrame(tick);
+          } else {
+            el.textContent = raw;
+          }
+        };
+        requestAnimationFrame(tick);
+      });
+    }, { threshold: 0.6 });
+    nums.forEach(function (el) { io2.observe(el); });
+  }
+
+  /* connector lines in the intelligence diagram, computed after layout */
+  var drawIntelLines = function () {
+    var svg = document.getElementById("intelLines");
+    var raw = document.getElementById("rawCard");
+    var node = document.getElementById("intelNode");
+    if (!svg || !raw || !node) return;
+    var diagram = svg.parentNode;
+    var dr = diagram.getBoundingClientRect();
+    if (window.getComputedStyle(svg).display === "none" || dr.width < 700) return;
+    svg.setAttribute("width", dr.width);
+    svg.setAttribute("height", dr.height);
+    svg.setAttribute("viewBox", "0 0 " + dr.width + " " + dr.height);
+    var rel = function (r) {
+      return { left: r.left - dr.left, right: r.right - dr.left, top: r.top - dr.top, cy: r.top - dr.top + r.height / 2 };
+    };
+    var rr = rel(raw.getBoundingClientRect());
+    var nr = rel(node.getBoundingClientRect());
+    var minis = Array.prototype.slice.call(diagram.querySelectorAll(".mini-card"));
+    var lines = svg.querySelectorAll("line");
+    var set = function (ln, x1, y1, x2, y2) {
+      ln.setAttribute("x1", x1); ln.setAttribute("y1", y1);
+      ln.setAttribute("x2", x2); ln.setAttribute("y2", y2);
+    };
+    var ncx = (nr.left + nr.right) / 2;
+    set(lines[0], rr.right + 10, rr.cy, nr.left - 12, nr.cy);
+    minis.forEach(function (m, i) {
+      var mr = rel(m.getBoundingClientRect());
+      if (lines[i + 1]) set(lines[i + 1], nr.right + 12, nr.cy + (i - 1) * 8, mr.left - 10, mr.cy);
+    });
+  };
+  drawIntelLines();
+  window.addEventListener("resize", drawIntelLines);
+  window.addEventListener("load", drawIntelLines);
+  setTimeout(drawIntelLines, 600);
+
+  /* constellation network in the Horizon section */
+  var canvas = document.getElementById("netCanvas");
+  var reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (canvas && canvas.getContext && !reduced) {
+    var ctx = canvas.getContext("2d");
+    var dots = [], W = 0, H = 0, dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var COUNT = 70, LINK = 130;
+    var seed = 42;
+    var rand = function () { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
+    var size = function () {
+      var r = canvas.parentNode.getBoundingClientRect();
+      W = r.width; H = r.height;
+      canvas.width = W * dpr; canvas.height = H * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
+    var init = function () {
+      dots = [];
+      for (var i = 0; i < COUNT; i++) {
+        dots.push({
+          x: rand() * W, y: rand() * H,
+          vx: (rand() - 0.5) * 0.22, vy: (rand() - 0.5) * 0.22,
+          r: 1 + rand() * 1.6,
+          hot: rand() < 0.18
+        });
+      }
+    };
+    var draw = function () {
+      ctx.clearRect(0, 0, W, H);
+      for (var i = 0; i < dots.length; i++) {
+        var a = dots[i];
+        a.x += a.vx; a.y += a.vy;
+        if (a.x < -10) a.x = W + 10; if (a.x > W + 10) a.x = -10;
+        if (a.y < -10) a.y = H + 10; if (a.y > H + 10) a.y = -10;
+        for (var j = i + 1; j < dots.length; j++) {
+          var b = dots[j];
+          var dx = a.x - b.x, dy = a.y - b.y;
+          var d2 = dx * dx + dy * dy;
+          if (d2 < LINK * LINK) {
+            var t = 1 - Math.sqrt(d2) / LINK;
+            ctx.strokeStyle = "rgba(139,92,246," + (0.16 * t).toFixed(3) + ")";
+            ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+          }
+        }
+      }
+      for (var k = 0; k < dots.length; k++) {
+        var p = dots[k];
+        ctx.fillStyle = p.hot ? "rgba(196,181,253,0.85)" : "rgba(250,250,249,0.5)";
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fill();
+      }
+      requestAnimationFrame(draw);
+    };
+    size(); init();
+    window.addEventListener("resize", function () { size(); init(); });
+    requestAnimationFrame(draw);
+  }
+})();
+</script>
+</body>
+</html>
