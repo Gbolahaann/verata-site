@@ -195,7 +195,7 @@ header.hero {
   mask-image: radial-gradient(860px 520px at 66% 38%, black, transparent 76%);
 }
 .hero-blob { position: absolute; border-radius: 999px; pointer-events: none; filter: blur(56px); }
-.hero-net { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; opacity: 0.75; }
+.hero-net { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; opacity: 0.9; }
 .hero-blob.a { width: 620px; height: 460px; right: -120px; top: -90px; background: radial-gradient(closest-side, rgba(139,92,246,0.12), transparent 72%); animation: vDrift 14s ease-in-out infinite alternate; }
 .hero-blob.b { width: 520px; height: 400px; left: -150px; bottom: -130px; background: radial-gradient(closest-side, rgba(70,35,122,0.08), transparent 72%); animation: vDrift 19s ease-in-out infinite alternate-reverse; }
 .hero-inner {
@@ -627,7 +627,7 @@ footer.site {
   <div class="wrap hero-inner">
     <div>
       <div class="eyebrow reveal">VERATA COMMUNITY INTELLIGENCE</div>
-      <h1 class="hero-title reveal" data-delay="90">Turn every gathering into a <em>living, verified network.</em></h1>
+      <h1 class="hero-title reveal" data-delay="90">Turn every startup event into a <em>permanent intelligence asset.</em></h1>
       <p class="hero-sub reveal" data-delay="180">Verata verifies your attendees — startups, investors, corporates, and institutions — against public sources, then delivers a branded live directory your community searches all year.</p>
       <div class="hero-ctas reveal" data-delay="270">
         <a href="#contact" class="btn">Partner with us</a>
@@ -1266,12 +1266,109 @@ footer.site {
     dot: "rgba(250,250,249,0.5)", hotDot: "rgba(196,181,253,0.85)",
     pulse: "rgba(196,181,253,", pulseEvery: 0
   });
-  makeNet(document.getElementById("heroCanvas"), {
-    seed: 7, count: 46, link: 120, speed: 0.13,
-    line: "rgba(109,40,217,", lineAlpha: 0.09,
-    dot: "rgba(70,35,122,0.28)", hotDot: "rgba(109,40,217,0.4)",
-    pulse: "rgba(70,35,122,", pulseEvery: 2400
-  });
+  /* hero illustration: dot-matrix Africa with deal-flow arcs between city nodes */
+  (function () {
+    var canvas = document.getElementById("heroCanvas");
+    if (!canvas || !canvas.getContext) return;
+    var ctx = canvas.getContext("2d");
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    /* rough normalized outlines (x, y in a 1 x 1.15 box): mainland + Madagascar */
+    var MAINLAND = [
+      [0.36,0.02],[0.50,0.05],[0.62,0.03],[0.68,0.08],[0.66,0.16],[0.74,0.26],[0.86,0.30],
+      [0.72,0.42],[0.66,0.52],[0.62,0.62],[0.64,0.72],[0.56,0.84],[0.44,0.94],[0.34,0.88],
+      [0.36,0.76],[0.30,0.62],[0.32,0.52],[0.22,0.44],[0.08,0.36],[0.02,0.26],[0.06,0.16],
+      [0.16,0.08],[0.26,0.04]
+    ];
+    var MADAGASCAR = [[0.78,0.74],[0.82,0.70],[0.85,0.76],[0.82,0.87],[0.78,0.84]];
+    var CITY_POS = [
+      [0.24,0.33],[0.19,0.34],[0.68,0.47],[0.63,0.10],[0.58,0.47],[0.52,0.82],[0.44,0.92]
+    ];
+    var inPoly = function (poly, x, y) {
+      var inside = false;
+      for (var i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+        var xi = poly[i][0], yi = poly[i][1], xj = poly[j][0], yj = poly[j][1];
+        if ((yi > y) !== (yj > y) && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) inside = !inside;
+      }
+      return inside;
+    };
+    var W = 0, H = 0, dots = [], cities = [], arc = null, pulses = [], nextArcAt = 0;
+    var seed = 11;
+    var rand = function () { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
+    var size = function () {
+      var r = canvas.parentNode.getBoundingClientRect();
+      W = r.width; H = r.height;
+      canvas.width = W * dpr; canvas.height = H * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      var mapH = H * 0.9, mapW = mapH / 1.15;
+      var ox = W * 0.70 - mapW / 2, oy = H * 0.05;
+      var px = function (p) { return [ox + p[0] * mapW, oy + p[1] * mapW * 1.15 / 1.15 * 1.0]; };
+      var toPx = function (p) { return [ox + p[0] * mapW, oy + p[1] * mapW]; };
+      dots = [];
+      var step = Math.max(9, mapW / 40);
+      for (var gx = 0; gx < 1; gx += step / mapW) {
+        for (var gy = 0; gy < 1.15; gy += step / mapW) {
+          if (inPoly(MAINLAND, gx, gy) || inPoly(MADAGASCAR, gx, gy)) {
+            var pt = toPx([gx, gy]);
+            dots.push({ x: pt[0], y: pt[1], phase: rand() * 6.28 });
+          }
+        }
+      }
+      cities = CITY_POS.map(toPx);
+    };
+    var reducedH = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    var drawStatic = function (t) {
+      ctx.clearRect(0, 0, W, H);
+      for (var i = 0; i < dots.length; i++) {
+        var d = dots[i];
+        var a = 0.20 + (reducedH ? 0 : 0.08 * Math.sin(t * 0.0012 + d.phase));
+        ctx.fillStyle = "rgba(70,35,122," + a.toFixed(3) + ")";
+        ctx.beginPath(); ctx.arc(d.x, d.y, 1.45, 0, 6.28); ctx.fill();
+      }
+      for (var c = 0; c < cities.length; c++) {
+        ctx.fillStyle = "rgba(109,40,217,0.65)";
+        ctx.beginPath(); ctx.arc(cities[c][0], cities[c][1], 2.8, 0, 6.28); ctx.fill();
+      }
+    };
+    var draw = function (t) {
+      drawStatic(t);
+      if (!arc && t > nextArcAt && cities.length > 1) {
+        var ai = Math.floor(rand() * cities.length), bi;
+        do { bi = Math.floor(rand() * cities.length); } while (bi === ai);
+        arc = { a: cities[ai], b: cities[bi], t0: t, dur: 2400 };
+      }
+      if (arc) {
+        var p = (t - arc.t0) / arc.dur;
+        if (p >= 1) {
+          pulses.push({ x: arc.b[0], y: arc.b[1], t0: t });
+          arc = null;
+          nextArcAt = t + 900;
+        } else {
+          var mx = (arc.a[0] + arc.b[0]) / 2, my = (arc.a[1] + arc.b[1]) / 2;
+          var dx = arc.b[0] - arc.a[0], dy = arc.b[1] - arc.a[1];
+          var len = Math.sqrt(dx * dx + dy * dy);
+          var cx = mx - dy / len * len * 0.22, cy = my + dx / len * len * 0.22;
+          var fade = p < 0.15 ? p / 0.15 : (p > 0.8 ? (1 - p) / 0.2 : 1);
+          ctx.strokeStyle = "rgba(109,40,217," + (0.4 * fade).toFixed(3) + ")";
+          ctx.lineWidth = 1.4;
+          ctx.setLineDash([len * 1.25 * Math.min(1, p / 0.8), len * 1.4]);
+          ctx.beginPath(); ctx.moveTo(arc.a[0], arc.a[1]); ctx.quadraticCurveTo(cx, cy, arc.b[0], arc.b[1]); ctx.stroke();
+          ctx.setLineDash([]);
+        }
+      }
+      for (var m = pulses.length - 1; m >= 0; m--) {
+        var pl = pulses[m], pp = (t - pl.t0) / 1400;
+        if (pp >= 1) { pulses.splice(m, 1); continue; }
+        ctx.strokeStyle = "rgba(70,35,122," + ((1 - pp) * 0.45).toFixed(3) + ")";
+        ctx.lineWidth = 1.2;
+        ctx.beginPath(); ctx.arc(pl.x, pl.y, 4 + pp * 22, 0, 6.28); ctx.stroke();
+      }
+      requestAnimationFrame(draw);
+    };
+    size();
+    window.addEventListener("resize", size);
+    if (reducedH) { drawStatic(0); }
+    else { requestAnimationFrame(draw); }
+  })();
 })();
 </script>
 </body>
