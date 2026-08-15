@@ -1,6 +1,6 @@
 # verata-site
 
-Marketing site for **Verata** — the verified data layer for African venture. Verata turns event attendee, startup, and investor lists into verified, searchable live directories.
+Marketing site for **Verata**, the trusted evidence layer for African venture. Verata turns event attendee, startup, and investor lists into verified, searchable live directories.
 
 ## Viewing the site
 
