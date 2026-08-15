@@ -103,6 +103,7 @@ h2.section-title {
 @keyframes vDash   { to { stroke-dashoffset: -20; } }
 @keyframes vShimmer { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 @keyframes vBlink { 0%, 45% { opacity: 1; } 50%, 100% { opacity: 0; } }
+@keyframes vAnswerPulse { 0% { opacity: 1; } 35% { opacity: 0.45; } 100% { opacity: 1; } }
 
 /* ---------- logo (per LOGO-SPEC: "The Ledger") ---------- */
 .verata-logo {
@@ -194,6 +195,7 @@ header.hero {
   mask-image: radial-gradient(860px 520px at 66% 38%, black, transparent 76%);
 }
 .hero-blob { position: absolute; border-radius: 999px; pointer-events: none; filter: blur(56px); }
+.hero-net { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; opacity: 0.75; }
 .hero-blob.a { width: 620px; height: 460px; right: -120px; top: -90px; background: radial-gradient(closest-side, rgba(139,92,246,0.12), transparent 72%); animation: vDrift 14s ease-in-out infinite alternate; }
 .hero-blob.b { width: 520px; height: 400px; left: -150px; bottom: -130px; background: radial-gradient(closest-side, rgba(70,35,122,0.08), transparent 72%); animation: vDrift 19s ease-in-out infinite alternate-reverse; }
 .hero-inner {
@@ -412,8 +414,17 @@ h1.hero-title em {
   box-shadow: 0 24px 60px -30px rgba(43,22,80,0.25), 0 4px 16px -10px rgba(23,21,28,0.08);
 }
 .ask-bar svg { flex: none; }
-.ask-query { font-family: var(--mono); font-size: clamp(13.5px, 2.2vw, 17px); font-weight: 500; color: var(--ink); white-space: nowrap; overflow: hidden; }
+.ask-query {
+  font-family: var(--mono); font-size: clamp(13.5px, 2.2vw, 17px); font-weight: 500; color: var(--ink);
+  flex: 1; min-width: 0; border: none; outline: none; background: transparent; padding: 0;
+  caret-color: var(--violet);
+}
+.ask-query::placeholder { color: var(--faint); opacity: 1; }
 .ask-caret { flex: none; width: 2px; height: 1.25em; background: var(--violet); animation: vBlink 1.1s steps(1) infinite; }
+.ask-bar:focus-within { border-color: #D4C6EE; box-shadow: 0 24px 60px -30px rgba(43,22,80,0.3), 0 0 0 3px rgba(109,40,217,0.10); }
+.ask-bar:focus-within .ask-caret { display: none; }
+.ask-bar { cursor: text; transition: border-color 0.25s, box-shadow 0.25s; }
+.ask-answer.pulse { animation: vAnswerPulse 0.55s ease; }
 .ask-try { font-family: var(--mono); font-size: 12px; color: var(--faint); margin: 14px 6px 0; transition: opacity 0.45s ease; min-height: 1.4em; }
 .ask-answer {
   margin-top: 26px; background: #fff; border: 1px solid var(--line); border-radius: 12px;
@@ -612,10 +623,11 @@ footer.site {
   <div class="hero-grid-lines"></div>
   <div class="hero-blob a"></div>
   <div class="hero-blob b"></div>
+  <canvas class="hero-net" id="heroCanvas"></canvas>
   <div class="wrap hero-inner">
     <div>
       <div class="eyebrow reveal">VERATA COMMUNITY INTELLIGENCE</div>
-      <h1 class="hero-title reveal" data-delay="90">Every room in African venture, turned into a <em>permanent intelligence asset.</em></h1>
+      <h1 class="hero-title reveal" data-delay="90">Turn every gathering into a <em>living, verified network.</em></h1>
       <p class="hero-sub reveal" data-delay="180">Verata verifies your attendees — startups, investors, corporates, and institutions — against public sources, then delivers a branded live directory your community searches all year.</p>
       <div class="hero-ctas reveal" data-delay="270">
         <a href="#contact" class="btn">Partner with us</a>
@@ -869,8 +881,8 @@ footer.site {
     <div class="ask-stage reveal" data-delay="220">
       <div class="ask-bar">
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="8" cy="8" r="5.5" stroke="#A8A29E" stroke-width="1.6"/><path d="M12.2 12.2 L16 16" stroke="#A8A29E" stroke-width="1.6" stroke-linecap="round"/></svg>
-        <span class="ask-query" id="askQuery">Which fintech founders in this community are raising?</span>
-        <span class="ask-caret"></span>
+        <input class="ask-query" id="askQuery" type="text" value="Which fintech founders in this community are raising?" placeholder="Ask your community anything…" aria-label="Ask your community" spellcheck="false" autocomplete="off">
+        <span class="ask-caret" id="askCaret"></span>
       </div>
       <div class="ask-try" id="askTry"></div>
       <div class="ask-answer">
@@ -1086,7 +1098,18 @@ footer.site {
   var askQuery = document.getElementById("askQuery");
   var askTry = document.getElementById("askTry");
   if (askQuery && askTry) {
-    var fullQuery = askQuery.textContent;
+    var fullQuery = askQuery.value;
+    var askBar = askQuery.parentNode;
+    var askAnswer = askBar.parentNode.querySelector(".ask-answer");
+    askBar.addEventListener("click", function () { askQuery.focus(); });
+    askQuery.addEventListener("keydown", function (ev) {
+      if (ev.key === "Enter") {
+        ev.preventDefault();
+        askAnswer.classList.remove("pulse");
+        void askAnswer.offsetWidth;
+        askAnswer.classList.add("pulse");
+      }
+    });
     var tries = [
       "Try: \u201CWhich corporates here have partnered with logistics startups?\u201D",
       "Try: \u201CWho invested in Ghanaian healthtech this year?\u201D"
@@ -1103,8 +1126,13 @@ footer.site {
     }, 4500);
     var reducedMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (!reducedMotion && "IntersectionObserver" in window) {
-      askQuery.textContent = "";
+      askQuery.value = "";
       var typed = false;
+      var userTookOver = false;
+      askQuery.addEventListener("focus", function () {
+        if (!userTookOver && askQuery.value) askQuery.select();
+        userTookOver = true;
+      });
       var ioAsk = new IntersectionObserver(function (entries) {
         entries.forEach(function (e) {
           if (!e.isIntersecting || typed) return;
@@ -1112,15 +1140,16 @@ footer.site {
           ioAsk.unobserve(e.target);
           var i = 0;
           var typeTick = function () {
-            askQuery.textContent = fullQuery.slice(0, i);
+            if (userTookOver) return;
+            askQuery.value = fullQuery.slice(0, i);
             i++;
             if (i <= fullQuery.length) setTimeout(typeTick, 34);
           };
           setTimeout(typeTick, 350);
         });
       }, { threshold: 0.4 });
-      ioAsk.observe(askQuery.parentNode);
-      setTimeout(function () { if (!typed) { askQuery.textContent = fullQuery; typed = true; } }, 6000);
+      ioAsk.observe(askBar);
+      setTimeout(function () { if (!typed && !userTookOver) { askQuery.value = fullQuery; typed = true; } }, 6000);
     }
   }
 
@@ -1159,14 +1188,13 @@ footer.site {
   window.addEventListener("load", drawIntelLines);
   setTimeout(drawIntelLines, 600);
 
-  /* constellation network in the Horizon section */
-  var canvas = document.getElementById("netCanvas");
+  /* constellation networks: dark in the Horizon, light behind the hero */
   var reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if (canvas && canvas.getContext && !reduced) {
+  var makeNet = function (canvas, opts) {
+    if (!canvas || !canvas.getContext || reduced) return;
     var ctx = canvas.getContext("2d");
-    var dots = [], W = 0, H = 0, dpr = Math.min(window.devicePixelRatio || 1, 2);
-    var COUNT = 70, LINK = 130;
-    var seed = 42;
+    var dots = [], pulses = [], W = 0, H = 0, dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var seed = opts.seed;
     var rand = function () { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
     var size = function () {
       var r = canvas.parentNode.getBoundingClientRect();
@@ -1176,15 +1204,23 @@ footer.site {
     };
     var init = function () {
       dots = [];
-      for (var i = 0; i < COUNT; i++) {
+      for (var i = 0; i < opts.count; i++) {
         dots.push({
           x: rand() * W, y: rand() * H,
-          vx: (rand() - 0.5) * 0.22, vy: (rand() - 0.5) * 0.22,
+          vx: (rand() - 0.5) * opts.speed, vy: (rand() - 0.5) * opts.speed,
           r: 1 + rand() * 1.6,
           hot: rand() < 0.18
         });
       }
     };
+    if (opts.pulseEvery) {
+      setInterval(function () {
+        if (dots.length && document.visibilityState === "visible") {
+          var d = dots[Math.floor(rand() * dots.length)];
+          pulses.push({ dot: d, t0: performance.now() });
+        }
+      }, opts.pulseEvery);
+    }
     var draw = function () {
       ctx.clearRect(0, 0, W, H);
       for (var i = 0; i < dots.length; i++) {
@@ -1196,9 +1232,9 @@ footer.site {
           var b = dots[j];
           var dx = a.x - b.x, dy = a.y - b.y;
           var d2 = dx * dx + dy * dy;
-          if (d2 < LINK * LINK) {
-            var t = 1 - Math.sqrt(d2) / LINK;
-            ctx.strokeStyle = "rgba(139,92,246," + (0.16 * t).toFixed(3) + ")";
+          if (d2 < opts.link * opts.link) {
+            var t = 1 - Math.sqrt(d2) / opts.link;
+            ctx.strokeStyle = opts.line + (opts.lineAlpha * t).toFixed(3) + ")";
             ctx.lineWidth = 1;
             ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
           }
@@ -1206,15 +1242,36 @@ footer.site {
       }
       for (var k = 0; k < dots.length; k++) {
         var p = dots[k];
-        ctx.fillStyle = p.hot ? "rgba(196,181,253,0.85)" : "rgba(250,250,249,0.5)";
+        ctx.fillStyle = p.hot ? opts.hotDot : opts.dot;
         ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fill();
+      }
+      var now = performance.now();
+      for (var m = pulses.length - 1; m >= 0; m--) {
+        var pl = pulses[m];
+        var pt = (now - pl.t0) / 1600;
+        if (pt >= 1) { pulses.splice(m, 1); continue; }
+        ctx.strokeStyle = opts.pulse + ((1 - pt) * 0.5).toFixed(3) + ")";
+        ctx.lineWidth = 1.2;
+        ctx.beginPath(); ctx.arc(pl.dot.x, pl.dot.y, 4 + pt * 20, 0, Math.PI * 2); ctx.stroke();
       }
       requestAnimationFrame(draw);
     };
     size(); init();
     window.addEventListener("resize", function () { size(); init(); });
     requestAnimationFrame(draw);
-  }
+  };
+  makeNet(document.getElementById("netCanvas"), {
+    seed: 42, count: 70, link: 130, speed: 0.22,
+    line: "rgba(139,92,246,", lineAlpha: 0.16,
+    dot: "rgba(250,250,249,0.5)", hotDot: "rgba(196,181,253,0.85)",
+    pulse: "rgba(196,181,253,", pulseEvery: 0
+  });
+  makeNet(document.getElementById("heroCanvas"), {
+    seed: 7, count: 46, link: 120, speed: 0.13,
+    line: "rgba(109,40,217,", lineAlpha: 0.09,
+    dot: "rgba(70,35,122,0.28)", hotDot: "rgba(109,40,217,0.4)",
+    pulse: "rgba(70,35,122,", pulseEvery: 2400
+  });
 })();
 </script>
 </body>
