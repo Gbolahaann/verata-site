@@ -124,6 +124,8 @@ h2.section-title {
 @keyframes vShimmer { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 @keyframes vBlink { 0%, 45% { opacity: 1; } 50%, 100% { opacity: 0; } }
 @keyframes vAnswerPulse { 0% { opacity: 1; } 35% { opacity: 0.45; } 100% { opacity: 1; } }
+@keyframes vGridPulse { 0%, 100% { opacity: 0.2; transform: scale(0.72); } 50% { opacity: 1; transform: scale(1); } }
+@keyframes vDetailIn { from { opacity: 0.42; transform: translateY(7px); } to { opacity: 1; transform: translateY(0); } }
 
 /* ---------- logo (per LOGO-SPEC: "The Ledger") ---------- */
 .verata-logo {
@@ -171,18 +173,20 @@ nav.site.float .nav-inner {
 }
 .brand { display: flex; align-items: center; text-decoration: none; }
 .brand .verata-logo { font-size: 21px; }
-.nav-links { display: flex; gap: 26px; flex: 1; }
+.nav-links { position: relative; isolation: isolate; display: flex; align-items: center; gap: 26px; flex: 1; }
+.nav-indicator {
+  position: absolute; z-index: 0; left: 0; top: 50%; width: 0; height: 32px;
+  border: 1px solid #E6DFF0; border-radius: 8px; background: var(--lav-1);
+  opacity: 0; pointer-events: none;
+  transform: translate(0, -50%);
+  transition: transform 220ms cubic-bezier(0.23,1,0.32,1), width 220ms cubic-bezier(0.23,1,0.32,1), opacity 150ms ease;
+}
 .nav-links a {
-  font-size: 14px; text-decoration: none; color: var(--body); position: relative; padding: 4px 0;
+  z-index: 1; font-size: 14px; text-decoration: none; color: var(--body); position: relative; padding: 7px 10px; margin: 0 -10px;
   transition: color 0.2s;
 }
-.nav-links a::after {
-  content: ""; position: absolute; left: 0; bottom: 0; height: 2px; width: 0;
-  border-radius: 2px; background: linear-gradient(90deg, var(--violet), var(--lilac));
-  transition: width 0.3s cubic-bezier(0.22,1,0.36,1);
-}
 .nav-links a:hover { color: var(--purple); }
-.nav-links a:hover::after { width: 100%; }
+.nav-links a.is-active { color: var(--purple); font-weight: 600; }
 .nav-cta { display: flex; align-items: center; gap: 20px; }
 .nav-cta .signin { font-size: 14px; font-weight: 500; text-decoration: none; color: var(--ink); transition: color 0.2s; }
 .nav-cta .signin:hover { color: var(--violet); }
@@ -190,14 +194,24 @@ nav.site.float .nav-inner {
 .menu-btn { display: none; margin-left: auto; background: none; border: 1px solid var(--line-purple); border-radius: 8px; padding: 8px 10px; cursor: pointer; }
 .menu-btn svg { display: block; }
 .mobile-panel {
-  display: none; flex-direction: column; gap: 4px;
-  padding: 10px clamp(20px,5vw,44px) 20px; border-top: 1px solid var(--line-purple);
-  background: rgba(255,255,255,0.98);
+  position: absolute; top: 100%; left: 0; right: 0;
+  display: flex; flex-direction: column; gap: 4px; overflow: hidden;
+  max-height: 0; padding: 0 clamp(20px,5vw,44px); border-top: 1px solid transparent;
+  background: rgba(255,255,255,0.98); opacity: 0; visibility: hidden; pointer-events: none;
+  transform: translateY(-8px);
+  transition: max-height 320ms cubic-bezier(0.23,1,0.32,1), padding 260ms ease, opacity 180ms ease,
+    transform 260ms cubic-bezier(0.23,1,0.32,1), visibility 0s linear 320ms, border-color 180ms ease;
 }
 .mobile-panel a { text-decoration: none; color: var(--ink); font-size: 16px; padding: 12px 4px; border-bottom: 1px solid var(--line); }
+.mobile-panel a.is-active { color: var(--purple); font-weight: 600; }
 .mobile-panel a:last-child { border-bottom: none; }
 .mobile-panel .btn { margin-top: 10px; justify-content: center; color: #fff; }
-nav.site.open .mobile-panel { display: flex; }
+nav.site.open .mobile-panel {
+  max-height: 480px; padding-top: 10px; padding-bottom: 20px; border-top-color: var(--line-purple);
+  opacity: 1; visibility: visible; pointer-events: auto; transform: translateY(0);
+  transition-delay: 0s;
+  box-shadow: 0 24px 40px -28px rgba(23,21,28,0.28);
+}
 
 /* ---------- hero ---------- */
 header.hero {
@@ -324,6 +338,7 @@ h1.hero-title em {
 .directory-filters { display: flex; gap: 8px; flex-wrap: wrap; }
 .dir-filter { border: 1px solid var(--line); background: #fff; border-radius: 999px; padding: 7px 11px; cursor: pointer; font-family: var(--mono); font-size: 10.5px; color: var(--muted); transition: 0.2s ease; }
 .dir-filter:hover, .dir-filter[aria-pressed="true"] { border-color: #CDBDE5; color: var(--purple); background: var(--lav-1); }
+.directory-result-count { width: 100%; font-family: var(--mono); font-size: 10px; letter-spacing: 0.06em; color: var(--faint); }
 .directory-layout { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.8fr); min-height: 430px; }
 .directory-list { padding: 8px 18px 18px; border-right: 1px solid var(--line); }
 .directory-columns, .directory-row { display: grid; grid-template-columns: minmax(150px, 1.35fr) 0.8fr 0.72fr 0.54fr; gap: 14px; align-items: center; }
@@ -335,6 +350,9 @@ h1.hero-title em {
 .directory-company span, .directory-cell { display: block; margin-top: 4px; font-family: var(--mono); font-size: 11px; color: var(--muted); }
 .directory-status { color: var(--amber); font-family: var(--mono); font-size: 11px; }
 .directory-detail { padding: 28px; background: #FCFBFD; }
+.directory-detail-content.is-changing { animation: vDetailIn 320ms cubic-bezier(0.23,1,0.32,1); }
+.directory-no-results { min-height: 330px; place-content: center; text-align: center; color: var(--muted); font-size: 14px; line-height: 1.55; }
+.directory-no-results:not([hidden]) { display: grid; }
 .directory-detail-kicker { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; color: var(--violet); margin-bottom: 16px; }
 .directory-detail h3 { font-family: var(--serif); font-size: 27px; font-weight: 500; margin: 0 0 5px; }
 .directory-detail-meta { color: var(--muted); font-size: 14px; }
@@ -505,13 +523,27 @@ h1.hero-title em {
 .ask-answer.pulse { animation: vAnswerPulse 0.55s ease; }
 .ask-submit { flex: none; border: 0; border-radius: 8px; padding: 8px 13px; background: var(--ink); color: #fff; cursor: pointer; font-family: var(--mono); font-size: 11px; transition: background 0.2s ease, transform 0.2s ease; }
 .ask-submit:hover { background: var(--purple); transform: translateY(-1px); }
+.ask-submit:disabled { cursor: wait; opacity: 0.72; transform: none; }
 .ask-examples { display: flex; gap: 8px; flex-wrap: wrap; margin: 14px 6px 0; }
 .ask-example { border: 1px solid var(--line); border-radius: 999px; background: #fff; color: var(--muted); padding: 7px 11px; cursor: pointer; font-family: var(--mono); font-size: 10.5px; transition: 0.2s ease; }
 .ask-example:hover { color: var(--purple); border-color: #CDBDE5; background: var(--lav-1); }
+.ask-loading {
+  margin: 20px 4px -6px; display: flex; align-items: center; gap: 10px;
+  font-family: var(--mono); font-size: 11px; color: var(--muted);
+}
+.ask-loading[hidden] { display: none; }
+.source-loader { display: grid; grid-template-columns: repeat(3, 4px); gap: 2px; width: 16px; }
+.source-loader i { width: 4px; height: 4px; border-radius: 1px; background: var(--violet); animation: vGridPulse 0.9s ease-in-out infinite; }
+.source-loader i:nth-child(2), .source-loader i:nth-child(4) { animation-delay: 0.1s; }
+.source-loader i:nth-child(3), .source-loader i:nth-child(5), .source-loader i:nth-child(7) { animation-delay: 0.2s; }
+.source-loader i:nth-child(6), .source-loader i:nth-child(8) { animation-delay: 0.3s; }
+.source-loader i:nth-child(9) { animation-delay: 0.4s; }
+.ask-elapsed { margin-left: auto; color: var(--faint); }
 .ask-answer {
   margin-top: 26px; background: #fff; border: 1px solid var(--line); border-radius: 12px;
-  overflow: hidden; box-shadow: 0 18px 44px -28px rgba(23,21,28,0.18);
+  overflow: hidden; box-shadow: 0 18px 44px -28px rgba(23,21,28,0.18); transition: opacity 180ms ease;
 }
+.ask-answer[aria-busy="true"] { opacity: 0.42; }
 .ask-row { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; padding: 15px 22px; }
 .ask-row + .ask-row { border-top: 1px solid var(--line); }
 .ask-row .nm { font-size: 15px; font-weight: 600; }
@@ -714,6 +746,7 @@ footer.site {
   .directory-toolbar { padding: 14px; }
   .directory-search { min-width: 100%; }
   .directory-filters { width: 100%; }
+  .directory-result-count { margin-top: -2px; }
   .directory-list { padding: 6px 10px 12px; }
   .directory-detail { padding: 24px 20px; }
   .ask-bar { padding: 15px 16px; gap: 10px; }
@@ -740,6 +773,7 @@ footer.site {
       <span class="verata-logo">verata<i></i></span>
     </a>
     <div class="nav-links">
+      <span class="nav-indicator" id="navIndicator" aria-hidden="true"></span>
       <a href="#how">For Organizers</a>
       <a href="#directory">Product preview</a>
       <a href="#methodology">How we verify</a>
@@ -898,28 +932,31 @@ footer.site {
           <button class="dir-filter" type="button" data-filter="healthtech" aria-pressed="false">Healthtech</button>
           <button class="dir-filter" type="button" data-filter="logistics" aria-pressed="false">Logistics</button>
         </div>
+        <div class="directory-result-count" id="directoryResultCount" role="status" aria-live="polite">4 illustrative profiles</div>
       </div>
       <div class="directory-layout">
         <div class="directory-list" id="directoryList">
           <div class="directory-columns" aria-hidden="true"><span>COMPANY</span><span>SECTOR</span><span>STAGE</span><span>STATUS</span></div>
-          <button class="directory-row is-active" type="button" data-profile="kanzu" data-sector="logistics" data-search="kanzu logistics accra ghana logistics series a raising">
+          <button class="directory-row is-active" type="button" aria-pressed="true" data-profile="kanzu" data-sector="logistics" data-search="kanzu logistics accra ghana logistics series a raising">
             <span class="directory-company"><strong>Kanzu Logistics</strong><span>Accra, Ghana</span></span>
             <span class="directory-cell">Logistics</span><span class="directory-cell">Series A</span><span class="directory-status">● Raising</span>
           </button>
-          <button class="directory-row" type="button" data-profile="tafara" data-sector="fintech" data-search="tafara pay lagos nigeria fintech seed raising">
+          <button class="directory-row" type="button" aria-pressed="false" data-profile="tafara" data-sector="fintech" data-search="tafara pay lagos nigeria fintech seed raising">
             <span class="directory-company"><strong>Tafara Pay</strong><span>Lagos, Nigeria</span></span>
             <span class="directory-cell">Fintech</span><span class="directory-cell">Seed</span><span class="directory-status">● Raising</span>
           </button>
-          <button class="directory-row" type="button" data-profile="nawiri" data-sector="healthtech" data-search="nawiri health nairobi kenya healthtech series a verified">
+          <button class="directory-row" type="button" aria-pressed="false" data-profile="nawiri" data-sector="healthtech" data-search="nawiri health nairobi kenya healthtech series a verified">
             <span class="directory-company"><strong>Nawiri Health</strong><span>Nairobi, Kenya</span></span>
             <span class="directory-cell">Healthtech</span><span class="directory-cell">Series A</span><span class="directory-status" style="color: var(--green);">✓ Verified</span>
           </button>
-          <button class="directory-row" type="button" data-profile="sankofa" data-sector="fintech" data-search="sankofa credit accra ghana fintech pre seed raising">
+          <button class="directory-row" type="button" aria-pressed="false" data-profile="sankofa" data-sector="fintech" data-search="sankofa credit accra ghana fintech pre seed raising">
             <span class="directory-company"><strong>Sankofa Credit</strong><span>Accra, Ghana</span></span>
             <span class="directory-cell">Fintech</span><span class="directory-cell">Pre-seed</span><span class="directory-status">● Raising</span>
           </button>
         </div>
-        <aside class="directory-detail" id="directoryDetail" aria-live="polite">
+        <aside class="directory-detail" id="directoryDetail" aria-live="polite" aria-atomic="true">
+          <div class="directory-no-results" id="directoryNoResults" hidden>No illustrative profiles match this search. Try a company, city or sector.</div>
+          <div class="directory-detail-content" id="directoryDetailContent">
           <div class="directory-detail-kicker">SELECTED PROFILE · VERIFIED</div>
           <h3 id="directoryDetailName">Kanzu Logistics</h3>
           <div class="directory-detail-meta" id="directoryDetailMeta">Accra, Ghana · Logistics · Series A</div>
@@ -936,6 +973,7 @@ footer.site {
               <div class="directory-source"><span>Public filing</span><span class="ok">✓ matched</span></div>
               <div class="directory-source"><span>Credible press</span><span class="ok">✓ matched</span></div>
             </div>
+          </div>
           </div>
         </aside>
       </div>
@@ -1064,14 +1102,19 @@ footer.site {
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="5.5" stroke="#79716B" stroke-width="1.6"/><path d="M12.2 12.2 L16 16" stroke="#79716B" stroke-width="1.6" stroke-linecap="round"/></svg>
         <input class="ask-query" id="askQuery" type="text" value="Which fintech founders in this community are raising?" placeholder="Ask your community anything…" aria-label="Ask your community" spellcheck="false" autocomplete="off">
         <span class="ask-caret" id="askCaret"></span>
-        <button class="ask-submit" id="askSubmit" type="button">Ask</button>
+        <button class="ask-submit" id="askSubmit" type="button" aria-controls="askAnswer">Ask</button>
       </div>
       <div class="ask-examples" aria-label="Try an example question">
         <button class="ask-example" type="button" data-query="Which fintech founders in this community are raising?">Raising fintech</button>
         <button class="ask-example" type="button" data-query="Which corporates here have partnered with logistics startups?">Corporate partnerships</button>
         <button class="ask-example" type="button" data-query="Who invested in Ghanaian healthtech this year?">Ghanaian healthtech</button>
       </div>
-      <div class="ask-answer" id="askAnswer" aria-live="polite">
+      <div class="ask-loading" id="askLoading" role="status" aria-live="polite" hidden>
+        <span class="source-loader" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+        <span>Checking verified records and source traces</span>
+        <span class="ask-elapsed" id="askElapsed">0.0s</span>
+      </div>
+      <div class="ask-answer" id="askAnswer" aria-live="polite" aria-busy="false">
         <div class="ask-row">
           <span class="nm">Tafara Pay</span>
           <span class="meta">Lagos · Seed</span>
@@ -1289,13 +1332,59 @@ footer.site {
   });
   var reveal = function (el) { el.classList.add("in"); el.style.transitionDelay = (parseInt(el.getAttribute("data-delay"), 10) || 0) + "ms"; };
 
-  /* floating pill nav on scroll */
+  /* floating pill nav with a scroll-aware active section marker */
   var nav = document.getElementById("siteNav");
+  var navIndicator = document.getElementById("navIndicator");
+  var desktopNavLinks = Array.prototype.slice.call(nav.querySelectorAll(".nav-links a[href^='#']"));
+  var mobileSectionLinks = Array.prototype.slice.call(nav.querySelectorAll(".mobile-panel a:not(.btn)[href^='#']"));
+  var sectionPairs = desktopNavLinks.map(function (link) {
+    return { link: link, section: document.querySelector(link.getAttribute("href")) };
+  }).filter(function (pair) { return pair.section; }).sort(function (a, b) {
+    return a.section.offsetTop - b.section.offsetTop;
+  });
+  var activeSectionId = "";
+  var navWasFloating = false;
+  var moveNavIndicator = function () {
+    var activeLink = nav.querySelector(".nav-links a.is-active");
+    if (!activeLink || !navIndicator) {
+      if (navIndicator) navIndicator.style.opacity = "0";
+      return;
+    }
+    navIndicator.style.width = activeLink.offsetWidth + "px";
+    navIndicator.style.transform = "translate(" + activeLink.offsetLeft + "px, -50%)";
+    navIndicator.style.opacity = "1";
+  };
+  var setActiveSection = function (id) {
+    if (id === activeSectionId) return;
+    activeSectionId = id;
+    desktopNavLinks.concat(mobileSectionLinks).forEach(function (link) {
+      var active = link.getAttribute("href") === "#" + id;
+      link.classList.toggle("is-active", active);
+      if (active) link.setAttribute("aria-current", "location");
+      else link.removeAttribute("aria-current");
+    });
+    window.requestAnimationFrame(moveNavIndicator);
+  };
   var onScroll = function () {
-    if (window.scrollY > 40) nav.classList.add("float");
-    else nav.classList.remove("float");
+    var floating = window.scrollY > 40;
+    nav.classList.toggle("float", floating);
+    var marker = window.scrollY + window.innerHeight * 0.34;
+    var nextSection = "";
+    sectionPairs.forEach(function (pair) {
+      if (pair.section.offsetTop <= marker) nextSection = pair.section.id;
+    });
+    setActiveSection(nextSection);
+    if (floating !== navWasFloating) {
+      navWasFloating = floating;
+      window.setTimeout(moveNavIndicator, 420);
+    }
   };
   window.addEventListener("scroll", onScroll, { passive: true });
+  window.addEventListener("resize", moveNavIndicator);
+  desktopNavLinks.forEach(function (link) {
+    link.addEventListener("click", function () { setActiveSection(link.getAttribute("href").slice(1)); });
+  });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(moveNavIndicator);
   onScroll();
 
   /* accessible mobile navigation */
@@ -1363,10 +1452,15 @@ footer.site {
   var directoryRows = Array.prototype.slice.call(document.querySelectorAll(".directory-row"));
   var directoryFilters = Array.prototype.slice.call(document.querySelectorAll(".dir-filter"));
   var directorySearch = document.getElementById("directorySearch");
+  var directoryResultCount = document.getElementById("directoryResultCount");
+  var directoryDetailContent = document.getElementById("directoryDetailContent");
+  var directoryNoResults = document.getElementById("directoryNoResults");
   var currentDirectoryFilter = "all";
   var renderDirectoryDetail = function (key) {
     var profile = directoryProfiles[key];
     if (!profile) return;
+    directoryNoResults.hidden = true;
+    directoryDetailContent.hidden = false;
     document.getElementById("directoryDetailName").textContent = profile.name;
     document.getElementById("directoryDetailMeta").textContent = profile.meta;
     document.getElementById("directoryDetailRaised").textContent = profile.raised;
@@ -1387,6 +1481,19 @@ footer.site {
       matched.textContent = "✓ matched";
       row.appendChild(label); row.appendChild(matched); sourceWrap.appendChild(row);
     });
+    directoryDetailContent.classList.remove("is-changing");
+    void directoryDetailContent.offsetWidth;
+    directoryDetailContent.classList.add("is-changing");
+  };
+  var selectDirectoryRow = function (row, shouldFocus) {
+    if (!row) return;
+    directoryRows.forEach(function (item) {
+      var active = item === row;
+      item.classList.toggle("is-active", active);
+      item.setAttribute("aria-pressed", String(active));
+    });
+    renderDirectoryDetail(row.getAttribute("data-profile"));
+    if (shouldFocus) row.focus();
   };
   var filterDirectory = function () {
     var query = directorySearch.value.trim().toLowerCase();
@@ -1395,12 +1502,32 @@ footer.site {
       var searchMatch = !query || row.getAttribute("data-search").indexOf(query) !== -1;
       row.classList.toggle("is-hidden", !(sectorMatch && searchMatch));
     });
+    var visibleRows = directoryRows.filter(function (row) { return !row.classList.contains("is-hidden"); });
+    directoryResultCount.textContent = visibleRows.length + (visibleRows.length === 1 ? " illustrative profile" : " illustrative profiles");
+    var activeRow = directoryRows.filter(function (row) { return row.classList.contains("is-active"); })[0];
+    if (!visibleRows.length) {
+      directoryDetailContent.hidden = true;
+      directoryNoResults.hidden = false;
+      directoryRows.forEach(function (row) { row.setAttribute("aria-pressed", "false"); });
+    } else if (!activeRow || activeRow.classList.contains("is-hidden")) {
+      selectDirectoryRow(visibleRows[0], false);
+    }
   };
   directoryRows.forEach(function (row) {
-    row.addEventListener("click", function () {
-      directoryRows.forEach(function (item) { item.classList.remove("is-active"); });
-      row.classList.add("is-active");
-      renderDirectoryDetail(row.getAttribute("data-profile"));
+    row.addEventListener("click", function () { selectDirectoryRow(row, false); });
+    row.addEventListener("keydown", function (ev) {
+      if (["ArrowDown", "ArrowUp", "Home", "End"].indexOf(ev.key) === -1) return;
+      var visibleRows = directoryRows.filter(function (item) { return !item.classList.contains("is-hidden"); });
+      var currentIndex = visibleRows.indexOf(row);
+      var nextIndex = currentIndex;
+      if (ev.key === "ArrowDown") nextIndex = Math.min(visibleRows.length - 1, currentIndex + 1);
+      if (ev.key === "ArrowUp") nextIndex = Math.max(0, currentIndex - 1);
+      if (ev.key === "Home") nextIndex = 0;
+      if (ev.key === "End") nextIndex = visibleRows.length - 1;
+      if (visibleRows[nextIndex]) {
+        ev.preventDefault();
+        selectDirectoryRow(visibleRows[nextIndex], true);
+      }
     });
   });
   directoryFilters.forEach(function (button) {
@@ -1416,6 +1543,8 @@ footer.site {
   var askQuery = document.getElementById("askQuery");
   var askSubmit = document.getElementById("askSubmit");
   var askAnswer = document.getElementById("askAnswer");
+  var askLoading = document.getElementById("askLoading");
+  var askElapsed = document.getElementById("askElapsed");
   if (askQuery && askSubmit && askAnswer) {
     var fullQuery = askQuery.value;
     var askBar = askQuery.parentNode;
@@ -1443,8 +1572,9 @@ footer.site {
       if (q.indexOf("fintech") !== -1 || q.indexOf("raising") !== -1 || q.indexOf("founder") !== -1) return "fintech";
       return null;
     };
-    var renderAskAnswer = function () {
-      var kind = classifyQuestion(askQuery.value.trim());
+    var askRunTimer = null;
+    var askElapsedTimer = null;
+    var paintAskAnswer = function (kind) {
       askAnswer.textContent = "";
       if (!kind) {
         var empty = document.createElement("div");
@@ -1461,14 +1591,38 @@ footer.site {
           var badge = document.createElement("span"); badge.className = "mini-badge"; badge.textContent = "✓ Verified";
           row.appendChild(name); row.appendChild(meta); row.appendChild(state); row.appendChild(badge); askAnswer.appendChild(row);
         });
-        var foot = document.createElement("div"); foot.className = "ask-foot"; foot.textContent = "Interactive demo · production answers cite every result"; askAnswer.appendChild(foot);
+        var foot = document.createElement("div"); foot.className = "ask-foot"; foot.textContent = "Interactive demo · 3 verified records · production answers cite every result"; askAnswer.appendChild(foot);
       }
       askAnswer.classList.remove("pulse"); void askAnswer.offsetWidth; askAnswer.classList.add("pulse");
     };
-    askSubmit.addEventListener("click", renderAskAnswer);
-    askQuery.addEventListener("keydown", function (ev) { if (ev.key === "Enter") { ev.preventDefault(); renderAskAnswer(); } });
+    var renderAskAnswer = function () {
+      var kind = classifyQuestion(askQuery.value.trim());
+      if (askRunTimer) window.clearTimeout(askRunTimer);
+      if (askElapsedTimer) window.clearInterval(askElapsedTimer);
+      var startedAt = performance.now();
+      askLoading.hidden = false;
+      askElapsed.textContent = "0.0s";
+      askAnswer.setAttribute("aria-busy", "true");
+      askSubmit.disabled = true;
+      askSubmit.textContent = "Checking";
+      askElapsedTimer = window.setInterval(function () {
+        askElapsed.textContent = ((performance.now() - startedAt) / 1000).toFixed(1) + "s";
+      }, 100);
+      var waitTime = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 120 : 720;
+      askRunTimer = window.setTimeout(function () {
+        window.clearInterval(askElapsedTimer);
+        askElapsed.textContent = ((performance.now() - startedAt) / 1000).toFixed(1) + "s";
+        askLoading.hidden = true;
+        askAnswer.setAttribute("aria-busy", "false");
+        askSubmit.disabled = false;
+        askSubmit.textContent = "Ask";
+        paintAskAnswer(kind);
+      }, waitTime);
+    };
+    askSubmit.addEventListener("click", function () { userTookOver = true; renderAskAnswer(); });
+    askQuery.addEventListener("keydown", function (ev) { if (ev.key === "Enter") { ev.preventDefault(); userTookOver = true; renderAskAnswer(); } });
     Array.prototype.forEach.call(document.querySelectorAll(".ask-example"), function (button) {
-      button.addEventListener("click", function () { askQuery.value = button.getAttribute("data-query"); renderAskAnswer(); });
+      button.addEventListener("click", function () { userTookOver = true; askQuery.value = button.getAttribute("data-query"); renderAskAnswer(); });
     });
     var reducedMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (!reducedMotion && "IntersectionObserver" in window) {

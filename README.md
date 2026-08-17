@@ -18,5 +18,6 @@ The whole site is a single self-contained page. Clone or download the repo and o
 - Company names, figures, source labels, and Ask results inside product previews are illustrative and labelled on the page.
 - Proof claims avoid invented live counts. Add real partner marks and outcome metrics when approved.
 - The primary conversion path is an organizer partnership enquiry; the static form prepares an email to `hello@verata.co` without collecting roster data.
+- Navigation includes an animated scroll-aware section marker; the directory supports live result counts and keyboard selection; Ask shows a compact source-checking state before results.
 
 Status: design iteration in progress.
